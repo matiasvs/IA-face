@@ -124,14 +124,18 @@ export class FaceOccluder {
 
                 // Position face mesh at a constant Z depth closer to camera
                 // Particles are at z = -2.5
-                // We set occluder at z = 0.5 to be definitely in front
-                // We ignore landmark.z to create a flat "shield" that is more robust
-                const z = 0.5;
+                // We set occluder at z = 0.0 to be safe from near clipping
+                const z = 0.0;
 
                 vertices.push(x, y, z);
                 landmarkToVertex.set(idx, i);
             }
         });
+
+        // Debug log (once per 100 frames to avoid spam)
+        if (Math.random() < 0.01) {
+            console.log(`FaceOccluder: Generated ${vertices.length / 3} vertices`);
+        }
 
         // Create triangles using Delaunay-like approach
         // For simplicity, we'll create a convex hull-like mesh
