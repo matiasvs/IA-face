@@ -13,84 +13,194 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  overflow: hidden;
 }
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+#input-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+#output-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Calibration Controls */
+#calibration-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 12px;
+  padding: 10px;
+  color: white;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+#calibration-controls.collapsed #calibration-content {
+  display: none;
+}
+
+#toggle-calibration {
+  background: rgba(100, 108, 255, 0.9);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+#toggle-calibration:hover {
+  transform: scale(1.1);
+}
+
+#calibration-content {
+  margin-top: 10px;
+  min-width: 250px;
+}
+
+#calibration-content h3 {
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.control-group {
+  margin-bottom: 15px;
+}
+
+.control-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.control-group input[type="range"] {
+  width: 100%;
+}
+
+#reset-calibration {
+  width: 100%;
+  padding: 8px;
+  background: rgba(255, 100, 100, 0.8);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#reset-calibration:hover {
+  background: rgba(255, 100, 100, 1);
+}
+
+/* Movement Controls */
+#movement-controls {
+  position: absolute !important;
+  top: 20px !important;
+  left: 20px !important;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 12px;
+  padding: 10px;
+  color: white;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+#movement-controls.collapsed #movement-content {
+  display: none;
+}
+
+#toggle-movement {
+  background: rgba(100, 255, 108, 0.9);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+#toggle-movement:hover {
+  transform: scale(1.1);
+}
+
+#movement-content {
+  margin-top: 10px;
+  min-width: 200px;
+}
+
+#movement-content h3 {
+  margin-bottom: 15px;
+  font-size: 16px;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vanilla:hover {
-  filter: drop-shadow(0 0 2em #f7df1eaa);
+.wasd-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
-.card {
-  padding: 2em;
+.wasd-middle {
+  display: flex;
+  gap: 8px;
 }
 
-.read-the-docs {
-  color: #888;
-}
-
-button {
+.wasd-btn {
+  width: 60px;
+  height: 60px;
+  background: rgba(100, 108, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.wasd-btn span {
+  font-size: 24px;
+  margin-top: 2px;
+}
+
+.wasd-btn:hover {
+  background: rgba(100, 108, 255, 1);
+  transform: scale(1.05);
+}
+
+.wasd-btn:active {
+  transform: scale(0.95);
+  background: rgba(80, 88, 235, 1);
 }

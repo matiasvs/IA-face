@@ -35,13 +35,22 @@ export class SceneManager {
         // Initialize face occluder for depth-based occlusion
         this.faceOccluder = new FaceOccluder(this.scene);
 
-        // Create a placeholder object (e.g., a red sphere for the nose)
-        // COMMENTED OUT - Para usar después
-        // const geometry = new THREE.SphereGeometry(0.5, 32, 32);
-        // const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-        // this.faceObject = new THREE.Mesh(geometry, material);
-        // this.faceObject.renderOrder = 3; // Render after occluder
-        // this.scene.add(this.faceObject);
+        // Create controllable red cube (positioned on right side, middle)
+        const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+        const cubeMaterial = new THREE.MeshStandardMaterial({
+            color: 0xff0000,
+            depthTest: true,
+            depthWrite: true
+        });
+        this.controllableCube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        this.controllableCube.position.set(2, 0, 0); // Right side, middle height
+        this.controllableCube.renderOrder = 1; // Render after occluder
+        this.scene.add(this.controllableCube);
+
+        // Movement configuration
+        this.cubeMovement = {
+            step: 0.2  // Movement step size
+        };
 
         // Position camera
         this.camera.position.z = 5;
@@ -192,6 +201,31 @@ export class SceneManager {
                     objIndex++;
                 }
             }
+        }
+    }
+
+    // Cube movement methods
+    moveCubeUp() {
+        if (this.controllableCube) {
+            this.controllableCube.position.y += this.cubeMovement.step;
+        }
+    }
+
+    moveCubeDown() {
+        if (this.controllableCube) {
+            this.controllableCube.position.y -= this.cubeMovement.step;
+        }
+    }
+
+    moveCubeLeft() {
+        if (this.controllableCube) {
+            this.controllableCube.position.x -= this.cubeMovement.step;
+        }
+    }
+
+    moveCubeRight() {
+        if (this.controllableCube) {
+            this.controllableCube.position.x += this.cubeMovement.step;
         }
     }
 

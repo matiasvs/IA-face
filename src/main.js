@@ -80,4 +80,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     depthSlider.value = 0.5;
     updateCalibration();
   });
+
+  // Setup movement controls
+  const movementPanel = document.getElementById('movement-controls');
+  const toggleMovement = document.getElementById('toggle-movement');
+  const btnUp = document.getElementById('btn-up');
+  const btnDown = document.getElementById('btn-down');
+  const btnLeft = document.getElementById('btn-left');
+  const btnRight = document.getElementById('btn-right');
+
+  // Toggle movement panel visibility
+  toggleMovement.addEventListener('click', () => {
+    movementPanel.classList.toggle('collapsed');
+  });
+
+  // Movement button event listeners
+  btnUp.addEventListener('click', () => {
+    sceneManager.moveCubeUp();
+  });
+
+  btnDown.addEventListener('click', () => {
+    sceneManager.moveCubeDown();
+  });
+
+  btnLeft.addEventListener('click', () => {
+    sceneManager.moveCubeLeft();
+  });
+
+  btnRight.addEventListener('click', () => {
+    sceneManager.moveCubeRight();
+  });
 });
