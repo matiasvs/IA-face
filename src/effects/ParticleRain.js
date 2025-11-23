@@ -80,8 +80,9 @@ export class ParticleRain {
 
         this.particles.instanceMatrix.needsUpdate = true;
 
-        // Let depth testing handle occlusion naturally
-        this.particles.renderOrder = 0;
+        // Render after face occluder (which has renderOrder = 0)
+        // This ensures the occluder writes to depth buffer first
+        this.particles.renderOrder = 1;
 
         this.scene.add(this.particles);
     }
