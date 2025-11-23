@@ -16,10 +16,7 @@ export class FaceOccluder {
         // Material that writes to depth buffer but doesn't render color
         // This creates an invisible mesh that blocks objects behind it
         const material = new THREE.MeshBasicMaterial({
-            color: 0x00ff00,       // Green for debugging
-            colorWrite: true,      // Make it visible
-            transparent: true,
-            opacity: 0.5,
+            colorWrite: false,     // Don't write to color buffer (invisible)
             depthWrite: true,      // Write to depth buffer (blocks objects)
             depthTest: true,       // Test depth
             depthFunc: THREE.LessEqualDepth,  // Standard depth function
@@ -132,10 +129,7 @@ export class FaceOccluder {
             }
         });
 
-        // Debug log (once per 100 frames to avoid spam)
-        if (Math.random() < 0.01) {
-            console.log(`FaceOccluder: Generated ${vertices.length / 3} vertices`);
-        }
+
 
         // Create triangles using Delaunay-like approach
         // For simplicity, we'll create a convex hull-like mesh
