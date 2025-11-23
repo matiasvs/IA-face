@@ -119,10 +119,11 @@ export class FaceOccluder {
                     }
                 }
 
-                // Position face mesh slightly in front of particles
-                // Particles are at z≈-1.0±0.5 (-0.5 to -1.5)
-                // Face should be at z≈-0.3 to 0 (in front of particles)
-                const z = -0.3 + landmark.z * widthAtZero * 0.2;
+                // Position face mesh at a constant Z depth closer to camera
+                // Particles are at z = -2.5
+                // We set occluder at z = 0.5 to be definitely in front
+                // We ignore landmark.z to create a flat "shield" that is more robust
+                const z = 0.5;
 
                 vertices.push(x, y, z);
                 landmarkToVertex.set(idx, i);
