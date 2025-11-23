@@ -16,8 +16,8 @@ export class ParticleRain {
             spawnAreaWidth: 4,   // Reduced from 10 to 4 to center the rain
             spawnAreaHeight: 8,
             // Adjusted depth to match hand tracking range (around z=0)
-            // Face occluder is at z≈-0.3, so particles should be strictly behind
-            spawnDepth: -2.5,  // Pushed back from -1.0 to -2.5
+            // Face occluder is at z≈0.0, so particles should be strictly behind
+            spawnDepth: -5.0,  // Pushed back even further to -5.0
             depthRange: 1.0,   // Range of depth variation
             resetHeight: 5     // Top of spawn area
         };
