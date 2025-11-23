@@ -81,6 +81,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateCalibration();
   });
 
+  // Setup test controls
+  const testPanel = document.getElementById('test-controls');
+  const toggleTest = document.getElementById('toggle-test');
+  const testBtn1 = document.getElementById('test-btn-1');
+  const testBtn2 = document.getElementById('test-btn-2');
+
+  toggleTest.addEventListener('click', () => {
+    testPanel.classList.toggle('collapsed');
+  });
+
+  testBtn1.addEventListener('click', () => {
+    console.log('Test Button 1 clicked');
+  });
+
+  testBtn2.addEventListener('click', () => {
+    console.log('Test Button 2 clicked');
+  });
+
   // Setup movement controls
   const movementPanel = document.getElementById('movement-controls');
   const toggleMovement = document.getElementById('toggle-movement');

@@ -13,44 +13,55 @@
   <div id="app">
     <video id="input-video"></video>
     <canvas id="output-canvas"></canvas>
+  </div>
 
-    <!-- Calibration Controls -->
-    <div id="calibration-controls" class="collapsed">
-      <button id="toggle-calibration">⚙️</button>
-      <div id="calibration-content">
-        <h3>🎯 Calibración de Manos</h3>
-        <div class="control-group">
-          <label>Offset Y: <span id="offset-y-value">-0.6</span></label>
-          <input type="range" id="offset-y" min="-2" max="2" step="0.1" value="-0.6">
-        </div>
-        <div class="control-group">
-          <label>Escala: <span id="scale-value">1.0</span></label>
-          <input type="range" id="scale" min="0.5" max="2" step="0.05" value="1.0">
-        </div>
-        <div class="control-group">
-          <label>Profundidad Z: <span id="depth-value">0.5</span></label>
-          <input type="range" id="depth" min="0" max="2" step="0.1" value="0.5">
-        </div>
-        <button id="reset-calibration">Reset</button>
+  <!-- Calibration Controls -->
+  <div id="calibration-controls" class="collapsed">
+    <button id="toggle-calibration">⚙️</button>
+    <div id="calibration-content">
+      <h3>🎯 Calibración de Manos</h3>
+      <div class="control-group">
+        <label>Offset Y: <span id="offset-y-value">-0.6</span></label>
+        <input type="range" id="offset-y" min="-2" max="2" step="0.1" value="-0.6">
       </div>
+      <div class="control-group">
+        <label>Escala: <span id="scale-value">1.0</span></label>
+        <input type="range" id="scale" min="0.5" max="2" step="0.05" value="1.0">
+      </div>
+      <div class="control-group">
+        <label>Profundidad Z: <span id="depth-value">0.5</span></label>
+        <input type="range" id="depth" min="0" max="2" step="0.1" value="0.5">
+      </div>
+      <button id="reset-calibration">Reset</button>
     </div>
+  </div>
 
-    <!-- WASD Movement Controls -->
-    <div id="movement-controls" class="collapsed">
-      <button id="toggle-movement">🎮</button>
-      <div id="movement-content">
-        <h3>🎮 Control de Cubo</h3>
-        <div class="wasd-grid">
-          <button class="wasd-btn" id="btn-up">W<br><span>↑</span></button>
-          <div class="wasd-middle">
-            <button class="wasd-btn" id="btn-left">A<br><span>←</span></button>
-            <button class="wasd-btn" id="btn-down">S<br><span>↓</span></button>
-            <button class="wasd-btn" id="btn-right">D<br><span>→</span></button>
-          </div>
+  <!-- Test Controls (Next to Calibration) -->
+  <div id="test-controls" class="collapsed">
+    <button id="toggle-test">🧪</button>
+    <div id="test-content">
+      <h3>🧪 Panel de Prueba</h3>
+      <button id="test-btn-1">Botón 1</button>
+      <button id="test-btn-2">Botón 2</button>
+    </div>
+  </div>
+
+  <!-- WASD Movement Controls -->
+  <div id="movement-controls" class="collapsed">
+    <button id="toggle-movement">🎮</button>
+    <div id="movement-content">
+      <h3>🎮 Control de Cubo</h3>
+      <div class="wasd-grid">
+        <button class="wasd-btn" id="btn-up">W<br><span>↑</span></button>
+        <div class="wasd-middle">
+          <button class="wasd-btn" id="btn-left">A<br><span>←</span></button>
+          <button class="wasd-btn" id="btn-down">S<br><span>↓</span></button>
+          <button class="wasd-btn" id="btn-right">D<br><span>→</span></button>
         </div>
       </div>
     </div>
   </div>
+
   <script type="module" src="/src/main.js"></script>
 </body>
 

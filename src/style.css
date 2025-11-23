@@ -118,17 +118,52 @@ body {
   background: rgba(255, 100, 100, 1);
 }
 
-/* Movement Controls */
-#movement-controls {
-  position: absolute !important;
-  top: 20px !important;
-  left: 20px !important;
+/* Test Controls */
+#test-controls {
+  position: absolute;
+  top: 20px;
+  right: 300px;
+  /* To the left of calibration controls */
   background: rgba(0, 0, 0, 0.8);
   border-radius: 12px;
   padding: 10px;
   color: white;
   transition: all 0.3s ease;
   z-index: 1000;
+}
+
+#test-controls.collapsed #test-content {
+  display: none;
+}
+
+#toggle-test {
+  background: rgba(255, 200, 100, 0.9);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+#test-content {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Movement Controls */
+/* Movement Controls */
+#movement-controls {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 12px;
+  padding: 10px;
+  color: white;
+  transition: all 0.3s ease;
+  z-index: 2000;
 }
 
 #movement-controls.collapsed #movement-content {
@@ -143,6 +178,10 @@ body {
   font-size: 20px;
   cursor: pointer;
   transition: transform 0.2s;
+  display: block;
+  /* Ensure button is always visible */
+  min-width: 50px;
+  min-height: 40px;
 }
 
 #toggle-movement:hover {
