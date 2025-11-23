@@ -7,6 +7,13 @@ export class SceneManager {
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, alpha: true }); // Alpha true for AR overlay
 
+        // Calibration parameters for hand tracking
+        this.handCalibration = {
+            offsetY: 0,
+            scale: 1.0,
+            depthScale: 0.5
+        };
+
         this.init();
     }
 
@@ -109,7 +116,7 @@ export class SceneManager {
     updateHands(results) {
         if (!this.handObjects) {
             this.handObjects = [];
-            const geometry = new THREE.SphereGeometry(0.2, 16, 16);
+            const geometry = new THREE.SphereGeometry(0.15, 16, 16); // Slightly smaller spheres
             const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
 
             // Create pool of objects for 2 hands * 21 landmarks
@@ -125,9 +132,11 @@ export class SceneManager {
         this.handObjects.forEach(obj => obj.visible = false);
 
         if (results.multiHandLandmarks) {
-            const videoAspect = window.innerWidth / window.innerHeight;
             const fov = this.camera.fov * (Math.PI / 180);
-            const heightAtZero = 2 * Math.tan(fov / 2) * 5;
+            const cameraDistance = 5; // Camera is at z=5
+
+            // Calculate visible area at z=0 plane
+            const heightAtZero = 2 * Math.tan(fov / 2) * cameraDistance;
             const widthAtZero = heightAtZero * this.camera.aspect;
 
             let objIndex = 0;
@@ -136,11 +145,18 @@ export class SceneManager {
                     if (objIndex >= this.handObjects.length) break;
 
                     const mesh = this.handObjects[objIndex];
+
+                    // MediaPipe coordinates:
+                    // x, y: normalized [0, 1] relative to image
+                    // z: depth relative to wrist (negative = closer to camera)
+
                     // Invert X to match mirrored video
-                    const x = -(landmark.x - 0.5) * widthAtZero;
-                    const y = -(landmark.y - 0.5) * heightAtZero;
-                    // Simple Z approximation
-                    const z = -landmark.z * widthAtZero;
+                    const x = -(landmark.x - 0.5) * widthAtZero * this.handCalibration.scale;
+                    const y = -(landmark.y - 0.5) * heightAtZero * this.handCalibration.scale + this.handCalibration.offsetY;
+
+                    // Z depth: MediaPipe's z is relative depth, scale it appropriately
+                    // Negative z in MediaPipe means closer to camera
+                    const z = landmark.z * widthAtZero * this.handCalibration.depthScale;
 
                     mesh.position.set(x, y, z);
                     mesh.visible = true;
@@ -148,5 +164,12 @@ export class SceneManager {
                 }
             }
         }
+    }
+
+    // Method to update calibration values
+    setHandCalibration(offsetY, scale, depthScale) {
+        this.handCalibration.offsetY = offsetY;
+        this.handCalibration.scale = scale;
+        this.handCalibration.depthScale = depthScale;
     }
 }

@@ -36,4 +36,38 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Start the camera
   camera.start();
+
+  // Setup calibration controls
+  const offsetYSlider = document.getElementById('offset-y');
+  const offsetYValue = document.getElementById('offset-y-value');
+  const scaleSlider = document.getElementById('scale');
+  const scaleValue = document.getElementById('scale-value');
+  const depthSlider = document.getElementById('depth');
+  const depthValue = document.getElementById('depth-value');
+  const resetButton = document.getElementById('reset-calibration');
+
+  // Update calibration on slider change
+  const updateCalibration = () => {
+    const offsetY = parseFloat(offsetYSlider.value);
+    const scale = parseFloat(scaleSlider.value);
+    const depth = parseFloat(depthSlider.value);
+
+    sceneManager.setHandCalibration(offsetY, scale, depth);
+
+    offsetYValue.textContent = offsetY.toFixed(1);
+    scaleValue.textContent = scale.toFixed(2);
+    depthValue.textContent = depth.toFixed(1);
+  };
+
+  offsetYSlider.addEventListener('input', updateCalibration);
+  scaleSlider.addEventListener('input', updateCalibration);
+  depthSlider.addEventListener('input', updateCalibration);
+
+  // Reset calibration
+  resetButton.addEventListener('click', () => {
+    offsetYSlider.value = 0;
+    scaleSlider.value = 1.0;
+    depthSlider.value = 0.5;
+    updateCalibration();
+  });
 });
