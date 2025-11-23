@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { ParticleRain } from '../effects/ParticleRain.js';
+import { FaceOccluder } from '../effects/FaceOccluder.js';
 
 export class SceneManager {
     constructor(canvas) {
@@ -21,16 +23,26 @@ export class SceneManager {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(window.devicePixelRatio);
 
+        // Enable depth testing for occlusion
+        this.renderer.sortObjects = true;
+
         // Lighting
         const light = new THREE.DirectionalLight(0xffffff, 1);
         light.position.set(0, 0, 1);
         this.scene.add(light);
         this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
+        // Initialize particle rain system
+        this.particleRain = new ParticleRain(this.scene);
+
+        // Initialize face occluder for depth-based occlusion
+        this.faceOccluder = new FaceOccluder(this.scene);
+
         // Create a placeholder object (e.g., a red sphere for the nose)
         const geometry = new THREE.SphereGeometry(0.5, 32, 32);
         const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
         this.faceObject = new THREE.Mesh(geometry, material);
+        this.faceObject.renderOrder = 3; // Render after occluder
         this.scene.add(this.faceObject);
 
         // Position camera
@@ -42,6 +54,11 @@ export class SceneManager {
 
     updateFace(landmarks) {
         if (!landmarks || landmarks.length === 0) return;
+
+        // Update face occluder for particle occlusion
+        if (this.faceOccluder) {
+            this.faceOccluder.updateFace(landmarks, this.camera);
+        }
 
         // Landmarks
         const nose = landmarks[1];
@@ -111,6 +128,12 @@ export class SceneManager {
 
     animate() {
         requestAnimationFrame(() => this.animate());
+
+        // Update particle rain
+        if (this.particleRain) {
+            this.particleRain.update();
+        }
+
         this.renderer.render(this.scene, this.camera);
     }
     updateHands(results) {
