@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import particleImageUrl from '../particleImage/particle-a.png';
 
 export class ParticleRain {
     constructor(scene, particleCount = 200) {
@@ -25,8 +26,21 @@ export class ParticleRain {
     }
 
     init() {
-        // Load particle texture
-        const texture = this.textureLoader.load('/src/particleImage/particle-a.png');
+        // Load particle texture using imported URL (Vite asset handling)
+        const texture = this.textureLoader.load(
+            particleImageUrl,
+            // onLoad callback
+            (loadedTexture) => {
+                console.log('✅ Particle texture loaded successfully');
+                console.log('Texture size:', loadedTexture.image.width, 'x', loadedTexture.image.height);
+            },
+            // onProgress callback
+            undefined,
+            // onError callback
+            (error) => {
+                console.error('❌ Error loading particle texture:', error);
+            }
+        );
 
         // Create plane geometry for sprite particles
         const geometry = new THREE.PlaneGeometry(
@@ -34,11 +48,12 @@ export class ParticleRain {
             this.config.particleSize
         );
 
-        // Material with texture and transparency
+        // Material with texture
         const material = new THREE.MeshBasicMaterial({
             map: texture,
+            color: 0xffffff,   // White to show texture as-is
             transparent: true,
-            alphaTest: 0.1,    // Discard fully transparent pixels
+            opacity: 1.0,
             depthTest: true,   // Enable depth testing
             depthWrite: true,  // Write to depth buffer
             side: THREE.DoubleSide  // Render both sides
@@ -63,20 +78,14 @@ export class ParticleRain {
 
             dummy.position.set(x, y, z);
 
-            // Random rotation on Z axis only (spinning effect)
-            dummy.rotation.set(
-                0,
-                0,
-                Math.random() * Math.PI * 2
-            );
+            // No rotation - particles fall straight
 
             dummy.updateMatrix();
             this.particles.setMatrixAt(i, dummy.matrix);
 
             // Random fall speed variation
             this.velocities.push({
-                y: -(this.config.fallSpeed + Math.random() * 0.01),
-                rotationZ: (Math.random() - 0.5) * 0.05  // Spinning speed
+                y: -(this.config.fallSpeed + Math.random() * 0.01)
             });
         }
 
@@ -99,9 +108,6 @@ export class ParticleRain {
 
             // Update position (fall down)
             dummy.position.y += this.velocities[i].y;
-
-            // Update rotation for visual effect (spinning)
-            dummy.rotation.z += this.velocities[i].rotationZ;
 
             // Reset particle if it falls below the screen
             if (dummy.position.y < -this.config.spawnAreaHeight / 2 - 1) {
