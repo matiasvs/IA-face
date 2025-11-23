@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import particleImageUrl from '../particleImage/particle-a.png';
 
 export class ParticleRain {
-    constructor(scene, particleCount = 200) {
+    constructor(scene, particleCount = 60) {
         this.scene = scene;
         this.particleCount = particleCount;
         this.particles = null;
