@@ -85,9 +85,10 @@ export class FaceOccluder {
                 const landmark = landmarks[idx];
                 const x = -(landmark.x - 0.5) * widthAtZero;
                 const y = -(landmark.y - 0.5) * heightAtZero;
-                // Position face mesh slightly in front of z=0 (positive Z is towards camera)
-                // Particles are at z=-3 to -5, so face should be at z=0 to z=1
-                const z = 0.5 + landmark.z * widthAtZero * 0.3; // Positive Z towards camera
+                // Position face mesh slightly in front of particles
+                // Particles are at z≈-1.0±0.5 (-0.5 to -1.5)
+                // Face should be at z≈-0.3 to 0 (in front of particles)
+                const z = -0.3 + landmark.z * widthAtZero * 0.2;
 
                 vertices.push(x, y, z);
                 landmarkToVertex.set(idx, i);

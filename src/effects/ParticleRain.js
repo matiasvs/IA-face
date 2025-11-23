@@ -13,9 +13,11 @@ export class ParticleRain {
             fallSpeed: 0.02,
             spawnAreaWidth: 10,
             spawnAreaHeight: 8,
-            spawnDepth: -3,  // Behind the face
-            minDepth: -5,    // Furthest back
-            resetHeight: 5   // Top of spawn area
+            // Adjusted depth to match hand tracking range (around z=0)
+            // Face occluder is at z≈0.5, so particles should be at z≈-0.5 to -2
+            spawnDepth: -1.0,  // Behind the face but not too far
+            depthRange: 1.0,   // Range of depth variation
+            resetHeight: 5     // Top of spawn area
         };
 
         this.init();
@@ -52,7 +54,8 @@ export class ParticleRain {
             // Random position in spawn area
             const x = (Math.random() - 0.5) * this.config.spawnAreaWidth;
             const y = Math.random() * this.config.spawnAreaHeight - this.config.spawnAreaHeight / 2;
-            const z = this.config.spawnDepth + (Math.random() - 0.5) * 2;
+            // Depth range: spawnDepth ± depthRange/2
+            const z = this.config.spawnDepth + (Math.random() - 0.5) * this.config.depthRange;
 
             dummy.position.set(x, y, z);
 
@@ -103,7 +106,8 @@ export class ParticleRain {
             if (dummy.position.y < -this.config.spawnAreaHeight / 2 - 1) {
                 dummy.position.y = this.config.resetHeight;
                 dummy.position.x = (Math.random() - 0.5) * this.config.spawnAreaWidth;
-                dummy.position.z = this.config.spawnDepth + (Math.random() - 0.5) * 2;
+                // Reset with new random depth
+                dummy.position.z = this.config.spawnDepth + (Math.random() - 0.5) * this.config.depthRange;
             }
 
             // Update matrix
