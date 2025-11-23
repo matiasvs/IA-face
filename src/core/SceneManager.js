@@ -53,15 +53,17 @@ export class SceneManager {
         const heightAtZero = 2 * Math.tan(fov / 2) * 5; // Distance 5
         const widthAtZero = heightAtZero * this.camera.aspect;
 
-        const x = (nose.x - 0.5) * widthAtZero;
+        // Invert X to match mirrored video
+        const x = -(nose.x - 0.5) * widthAtZero;
         const y = -(nose.y - 0.5) * heightAtZero;
 
         this.faceObject.position.set(x, y, 0);
 
         // Rotation
         // Create vectors for eyes and face up/down
-        const p1 = new THREE.Vector3((leftEye.x - 0.5) * widthAtZero, -(leftEye.y - 0.5) * heightAtZero, 0);
-        const p2 = new THREE.Vector3((rightEye.x - 0.5) * widthAtZero, -(rightEye.y - 0.5) * heightAtZero, 0);
+        // Invert X for mirrored video
+        const p1 = new THREE.Vector3(-(leftEye.x - 0.5) * widthAtZero, -(leftEye.y - 0.5) * heightAtZero, 0);
+        const p2 = new THREE.Vector3(-(rightEye.x - 0.5) * widthAtZero, -(rightEye.y - 0.5) * heightAtZero, 0);
 
         // Vector from left eye to right eye (local X axis)
         const xAxis = new THREE.Vector3().subVectors(p2, p1).normalize();
@@ -134,7 +136,8 @@ export class SceneManager {
                     if (objIndex >= this.handObjects.length) break;
 
                     const mesh = this.handObjects[objIndex];
-                    const x = (landmark.x - 0.5) * widthAtZero;
+                    // Invert X to match mirrored video
+                    const x = -(landmark.x - 0.5) * widthAtZero;
                     const y = -(landmark.y - 0.5) * heightAtZero;
                     // Simple Z approximation
                     const z = -landmark.z * widthAtZero;
