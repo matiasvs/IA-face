@@ -91,9 +91,20 @@ export class FaceOccluder {
                 const foreheadTopIndices = [10, 338, 297, 332, 284, 251, 389, 356, 454];
 
                 if (foreheadTopIndices.includes(idx)) {
-                    // Extend upwards by a factor (e.g., 0.8 units or relative to face size)
-                    // This pushes the occlusion mask up into the hair area
-                    y += 0.8;
+                    // Extend upwards more (increased from 0.8 to 1.2)
+                    y += 1.2;
+                }
+
+                // Extend chin downwards to cover neck
+                // Chin/Jawline indices
+                const chinIndices = [
+                    152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109,
+                    365, 379, 378, 400, 377, 454, 323, 361, 288, 397
+                ];
+
+                if (chinIndices.includes(idx)) {
+                    // Extend downwards
+                    y -= 0.8;
                 }
 
                 // Position face mesh slightly in front of particles
