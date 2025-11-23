@@ -33,7 +33,9 @@ export class ParticleRain {
         const material = new THREE.MeshStandardMaterial({
             color: 0x0066ff,
             metalness: 0.3,
-            roughness: 0.4
+            roughness: 0.4,
+            depthTest: true,   // Enable depth testing
+            depthWrite: true   // Write to depth buffer
         });
 
         // Use InstancedMesh for better performance
@@ -75,8 +77,8 @@ export class ParticleRain {
 
         this.particles.instanceMatrix.needsUpdate = true;
 
-        // Set render order to render particles first (before face occluder)
-        this.particles.renderOrder = 1;
+        // Let depth testing handle occlusion naturally
+        this.particles.renderOrder = 0;
 
         this.scene.add(this.particles);
     }

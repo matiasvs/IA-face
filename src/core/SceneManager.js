@@ -23,9 +23,6 @@ export class SceneManager {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(window.devicePixelRatio);
 
-        // Enable depth testing for occlusion
-        this.renderer.sortObjects = true;
-
         // Lighting
         const light = new THREE.DirectionalLight(0xffffff, 1);
         light.position.set(0, 0, 1);
@@ -39,11 +36,12 @@ export class SceneManager {
         this.faceOccluder = new FaceOccluder(this.scene);
 
         // Create a placeholder object (e.g., a red sphere for the nose)
-        const geometry = new THREE.SphereGeometry(0.5, 32, 32);
-        const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-        this.faceObject = new THREE.Mesh(geometry, material);
-        this.faceObject.renderOrder = 3; // Render after occluder
-        this.scene.add(this.faceObject);
+        // COMMENTED OUT - Para usar después
+        // const geometry = new THREE.SphereGeometry(0.5, 32, 32);
+        // const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+        // this.faceObject = new THREE.Mesh(geometry, material);
+        // this.faceObject.renderOrder = 3; // Render after occluder
+        // this.scene.add(this.faceObject);
 
         // Position camera
         this.camera.position.z = 5;
@@ -77,6 +75,8 @@ export class SceneManager {
         const heightAtZero = 2 * Math.tan(fov / 2) * 5; // Distance 5
         const widthAtZero = heightAtZero * this.camera.aspect;
 
+        // COMMENTED OUT - faceObject updates (sphere is commented out)
+        /*
         // Invert X to match mirrored video
         const x = -(nose.x - 0.5) * widthAtZero;
         const y = -(nose.y - 0.5) * heightAtZero;
@@ -118,6 +118,7 @@ export class SceneManager {
         matrix.makeBasis(xAxis, yAxis, zAxis);
 
         this.faceObject.setRotationFromMatrix(matrix);
+        */
     }
 
     onWindowResize() {

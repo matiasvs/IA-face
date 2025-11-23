@@ -14,16 +14,19 @@ export class FaceOccluder {
         this.faceGeometry = new THREE.BufferGeometry();
 
         // Material that writes to depth buffer but doesn't render color
+        // This creates an invisible mesh that blocks objects behind it
         const material = new THREE.MeshBasicMaterial({
-            colorWrite: false,  // Don't write to color buffer
-            depthWrite: true,   // Write to depth buffer
-            depthTest: true     // Test depth
+            colorWrite: false,     // Don't write to color buffer (invisible)
+            depthWrite: true,      // Write to depth buffer (blocks objects)
+            depthTest: true,       // Test depth
+            depthFunc: THREE.LessEqualDepth,  // Standard depth function
+            side: THREE.DoubleSide // Render both sides for better coverage
         });
 
         this.occluderMesh = new THREE.Mesh(this.faceGeometry, material);
 
-        // Set render order to render after particles but before visible face object
-        this.occluderMesh.renderOrder = 2;
+        // Don't use renderOrder, let depth testing handle it naturally
+        this.occluderMesh.renderOrder = 0;
 
         this.scene.add(this.occluderMesh);
     }
@@ -82,7 +85,9 @@ export class FaceOccluder {
                 const landmark = landmarks[idx];
                 const x = -(landmark.x - 0.5) * widthAtZero;
                 const y = -(landmark.y - 0.5) * heightAtZero;
-                const z = -landmark.z * widthAtZero * 0.5; // Scale Z appropriately
+                // Position face mesh slightly in front of z=0 (positive Z is towards camera)
+                // Particles are at z=-3 to -5, so face should be at z=0 to z=1
+                const z = 0.5 + landmark.z * widthAtZero * 0.3; // Positive Z towards camera
 
                 vertices.push(x, y, z);
                 landmarkToVertex.set(idx, i);
