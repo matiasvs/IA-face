@@ -84,7 +84,18 @@ export class FaceOccluder {
             if (idx < landmarks.length) {
                 const landmark = landmarks[idx];
                 const x = -(landmark.x - 0.5) * widthAtZero;
-                const y = -(landmark.y - 0.5) * heightAtZero;
+                let y = -(landmark.y - 0.5) * heightAtZero;
+
+                // Extend forehead upwards to cover hair
+                // Forehead indices: 10 (top center), and surrounding upper arc
+                const foreheadTopIndices = [10, 338, 297, 332, 284, 251, 389, 356, 454];
+
+                if (foreheadTopIndices.includes(idx)) {
+                    // Extend upwards by a factor (e.g., 0.8 units or relative to face size)
+                    // This pushes the occlusion mask up into the hair area
+                    y += 0.8;
+                }
+
                 // Position face mesh slightly in front of particles
                 // Particles are at z≈-1.0±0.5 (-0.5 to -1.5)
                 // Face should be at z≈-0.3 to 0 (in front of particles)
