@@ -95,7 +95,7 @@ export class FaceOccluder {
                     y += 1.2;
                 }
 
-                // Extend chin downwards to cover neck
+                // Extend chin downwards to cover neck and shoulders
                 // Chin/Jawline indices
                 const chinIndices = [
                     152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109,
@@ -103,8 +103,20 @@ export class FaceOccluder {
                 ];
 
                 if (chinIndices.includes(idx)) {
-                    // Extend downwards
-                    y -= 0.8;
+                    // Extend downwards significantly to cover neck and body
+                    y -= 6.0; // Large value to go off-screen
+
+                    // Widen the "shoulders"
+                    // If it's a side point (near ears), push it out
+                    // 234 is right ear area, 454 is left ear area
+                    const rightSideIndices = [234, 127, 162, 21, 54, 103, 67, 109];
+                    const leftSideIndices = [454, 323, 361, 288, 397, 365, 379, 378, 400, 377];
+
+                    if (rightSideIndices.includes(idx)) {
+                        x += 1.5; // Push right shoulder out
+                    } else if (leftSideIndices.includes(idx)) {
+                        x -= 1.5; // Push left shoulder out
+                    }
                 }
 
                 // Position face mesh slightly in front of particles
