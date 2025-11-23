@@ -141,12 +141,17 @@ export class SceneManager {
         if (!this.handObjects) {
             this.handObjects = [];
             const geometry = new THREE.SphereGeometry(0.15, 16, 16); // Slightly smaller spheres
-            const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x00ff00,
+                depthTest: true,  // Ensure depth testing is enabled
+                depthWrite: true  // Write to depth buffer
+            });
 
             // Create pool of objects for 2 hands * 21 landmarks
             for (let i = 0; i < 42; i++) {
                 const mesh = new THREE.Mesh(geometry, material);
                 mesh.visible = false;
+                mesh.renderOrder = 1; // Render after face occluder (which has renderOrder = 0)
                 this.scene.add(mesh);
                 this.handObjects.push(mesh);
             }
