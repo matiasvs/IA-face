@@ -6,10 +6,11 @@ export class ParticleRain {
         this.particleCount = particleCount;
         this.particles = null;
         this.velocities = [];
+        this.textureLoader = new THREE.TextureLoader();
 
         // Configuration
         this.config = {
-            cubeSize: 0.08,
+            particleSize: 0.3,  // Size of the sprite
             fallSpeed: 0.02,
             spawnAreaWidth: 10,
             spawnAreaHeight: 8,
@@ -24,20 +25,23 @@ export class ParticleRain {
     }
 
     init() {
-        // Create cube geometry for particles
-        const geometry = new THREE.BoxGeometry(
-            this.config.cubeSize,
-            this.config.cubeSize,
-            this.config.cubeSize
+        // Load particle texture
+        const texture = this.textureLoader.load('/src/particleImage/particle-a.png');
+
+        // Create plane geometry for sprite particles
+        const geometry = new THREE.PlaneGeometry(
+            this.config.particleSize,
+            this.config.particleSize
         );
 
-        // Blue material for particles
-        const material = new THREE.MeshStandardMaterial({
-            color: 0x0066ff,
-            metalness: 0.3,
-            roughness: 0.4,
+        // Material with texture and transparency
+        const material = new THREE.MeshBasicMaterial({
+            map: texture,
+            transparent: true,
+            alphaTest: 0.1,    // Discard fully transparent pixels
             depthTest: true,   // Enable depth testing
-            depthWrite: true   // Write to depth buffer
+            depthWrite: true,  // Write to depth buffer
+            side: THREE.DoubleSide  // Render both sides
         });
 
         // Use InstancedMesh for better performance
@@ -59,11 +63,11 @@ export class ParticleRain {
 
             dummy.position.set(x, y, z);
 
-            // Random rotation
+            // Random rotation on Z axis only (spinning effect)
             dummy.rotation.set(
-                Math.random() * Math.PI,
-                Math.random() * Math.PI,
-                Math.random() * Math.PI
+                0,
+                0,
+                Math.random() * Math.PI * 2
             );
 
             dummy.updateMatrix();
@@ -72,9 +76,7 @@ export class ParticleRain {
             // Random fall speed variation
             this.velocities.push({
                 y: -(this.config.fallSpeed + Math.random() * 0.01),
-                rotationX: (Math.random() - 0.5) * 0.02,
-                rotationY: (Math.random() - 0.5) * 0.02,
-                rotationZ: (Math.random() - 0.5) * 0.02
+                rotationZ: (Math.random() - 0.5) * 0.05  // Spinning speed
             });
         }
 
@@ -98,9 +100,7 @@ export class ParticleRain {
             // Update position (fall down)
             dummy.position.y += this.velocities[i].y;
 
-            // Update rotation for visual effect
-            dummy.rotation.x += this.velocities[i].rotationX;
-            dummy.rotation.y += this.velocities[i].rotationY;
+            // Update rotation for visual effect (spinning)
             dummy.rotation.z += this.velocities[i].rotationZ;
 
             // Reset particle if it falls below the screen
