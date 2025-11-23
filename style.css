@@ -38,17 +38,55 @@ body {
 
 #calibration-controls {
   position: absolute;
-  bottom: 20px;
-  left: 20px;
+  top: 20px;
+  right: 20px;
   z-index: 10;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(10px);
-  padding: 15px 20px;
   border-radius: 12px;
   color: white;
   font-family: 'Arial', sans-serif;
-  min-width: 250px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+#calibration-controls.collapsed {
+  padding: 0;
+  min-width: auto;
+}
+
+#calibration-controls.collapsed #calibration-content {
+  display: none;
+}
+
+#toggle-calibration {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  color: white;
+  font-size: 20px;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#toggle-calibration:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+
+#toggle-calibration:active {
+  transform: scale(0.95);
+}
+
+#calibration-content {
+  padding: 15px 20px;
+  min-width: 250px;
 }
 
 #calibration-controls h3 {

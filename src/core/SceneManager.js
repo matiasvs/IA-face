@@ -9,7 +9,7 @@ export class SceneManager {
 
         // Calibration parameters for hand tracking
         this.handCalibration = {
-            offsetY: 0,
+            offsetY: -0.6,
             scale: 1.0,
             depthScale: 0.5
         };

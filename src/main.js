@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   camera.start();
 
   // Setup calibration controls
+  const calibrationPanel = document.getElementById('calibration-controls');
+  const toggleButton = document.getElementById('toggle-calibration');
   const offsetYSlider = document.getElementById('offset-y');
   const offsetYValue = document.getElementById('offset-y-value');
   const scaleSlider = document.getElementById('scale');
@@ -45,6 +47,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const depthSlider = document.getElementById('depth');
   const depthValue = document.getElementById('depth-value');
   const resetButton = document.getElementById('reset-calibration');
+
+  // Toggle panel visibility
+  toggleButton.addEventListener('click', () => {
+    calibrationPanel.classList.toggle('collapsed');
+  });
 
   // Update calibration on slider change
   const updateCalibration = () => {
@@ -59,13 +66,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     depthValue.textContent = depth.toFixed(1);
   };
 
+  // Initialize with default values
+  updateCalibration();
+
   offsetYSlider.addEventListener('input', updateCalibration);
   scaleSlider.addEventListener('input', updateCalibration);
   depthSlider.addEventListener('input', updateCalibration);
 
   // Reset calibration
   resetButton.addEventListener('click', () => {
-    offsetYSlider.value = 0;
+    offsetYSlider.value = -0.6;
     scaleSlider.value = 1.0;
     depthSlider.value = 0.5;
     updateCalibration();
