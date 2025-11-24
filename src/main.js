@@ -22,10 +22,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     sceneManager.updateHands(results);
   });
 
+  let isHandTrackingEnabled = true;
+  const toggleHandTrackingBtn = document.getElementById('toggle-hand-tracking');
+
+  toggleHandTrackingBtn.addEventListener('click', () => {
+    isHandTrackingEnabled = !isHandTrackingEnabled;
+    toggleHandTrackingBtn.textContent = isHandTrackingEnabled ? '✋ Hands: ON' : '✋ Hands: OFF';
+    toggleHandTrackingBtn.style.background = isHandTrackingEnabled ? '#4CAF50' : '#f44336';
+  });
+
   const camera = new Camera(videoElement, {
     onFrame: async () => {
       await faceTracker.send(videoElement);
-      await handTracker.send(videoElement);
+      if (isHandTrackingEnabled) {
+        await handTracker.send(videoElement);
+      }
     },
     width: 1280,
     height: 720
