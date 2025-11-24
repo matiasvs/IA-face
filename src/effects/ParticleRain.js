@@ -22,6 +22,7 @@ export class ParticleRain {
             resetHeight: 5     // Top of spawn area
         };
 
+        this.dummy = new THREE.Object3D();
         this.init();
     }
 
@@ -67,8 +68,6 @@ export class ParticleRain {
         );
 
         // Initialize particle positions and velocities
-        const dummy = new THREE.Object3D();
-
         for (let i = 0; i < this.particleCount; i++) {
             // Random position in spawn area
             const x = (Math.random() - 0.5) * this.config.spawnAreaWidth;
@@ -76,12 +75,12 @@ export class ParticleRain {
             // Depth range: spawnDepth ± depthRange/2
             const z = this.config.spawnDepth + (Math.random() - 0.5) * this.config.depthRange;
 
-            dummy.position.set(x, y, z);
+            this.dummy.position.set(x, y, z);
 
             // No rotation - particles fall straight
 
-            dummy.updateMatrix();
-            this.particles.setMatrixAt(i, dummy.matrix);
+            this.dummy.updateMatrix();
+            this.particles.setMatrixAt(i, this.dummy.matrix);
 
             // Random fall speed variation
             this.velocities.push({
@@ -99,27 +98,25 @@ export class ParticleRain {
     }
 
     update() {
-        const dummy = new THREE.Object3D();
-
         for (let i = 0; i < this.particleCount; i++) {
             // Get current matrix
-            this.particles.getMatrixAt(i, dummy.matrix);
-            dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale);
+            this.particles.getMatrixAt(i, this.dummy.matrix);
+            this.dummy.matrix.decompose(this.dummy.position, this.dummy.quaternion, this.dummy.scale);
 
             // Update position (fall down)
-            dummy.position.y += this.velocities[i].y;
+            this.dummy.position.y += this.velocities[i].y;
 
             // Reset particle if it falls below the screen
-            if (dummy.position.y < -this.config.spawnAreaHeight / 2 - 1) {
-                dummy.position.y = this.config.resetHeight;
-                dummy.position.x = (Math.random() - 0.5) * this.config.spawnAreaWidth;
+            if (this.dummy.position.y < -this.config.spawnAreaHeight / 2 - 1) {
+                this.dummy.position.y = this.config.resetHeight;
+                this.dummy.position.x = (Math.random() - 0.5) * this.config.spawnAreaWidth;
                 // Reset with new random depth
-                dummy.position.z = this.config.spawnDepth + (Math.random() - 0.5) * this.config.depthRange;
+                this.dummy.position.z = this.config.spawnDepth + (Math.random() - 0.5) * this.config.depthRange;
             }
 
             // Update matrix
-            dummy.updateMatrix();
-            this.particles.setMatrixAt(i, dummy.matrix);
+            this.dummy.updateMatrix();
+            this.particles.setMatrixAt(i, this.dummy.matrix);
         }
 
         this.particles.instanceMatrix.needsUpdate = true;
