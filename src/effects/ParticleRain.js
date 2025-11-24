@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import particleImageUrl from '../particleImage/particle-a.png';
 
 export class ParticleRain {
-    constructor(scene, particleCount = 60) {
+    constructor(scene, particleCount = 30) {
         this.scene = scene;
         this.particleCount = particleCount;
         this.particles = null;
@@ -11,7 +11,7 @@ export class ParticleRain {
 
         // Configuration
         this.config = {
-            particleSize: 0.48,  // Size of the sprite (1.6x larger)
+            particleSize: 0.70,  // Size of the sprite (1.6x larger)
             fallSpeed: 0.034,  // 1.7x faster fall speed
             spawnAreaWidth: 4,   // Reduced from 10 to 4 to center the rain
             spawnAreaHeight: 8,
