@@ -91,8 +91,8 @@ export class FaceOccluder {
                 const foreheadTopIndices = [10, 338, 297, 332, 284, 251, 389, 356, 454];
 
                 if (foreheadTopIndices.includes(idx)) {
-                    // Extend upwards more (increased from 0.8 to 1.2)
-                    y += 1.2;
+                    // Extend upwards more (increased from 1.2 to 2.5)
+                    y += 2.5;
                 }
 
                 // Extend chin downwards to cover neck
