@@ -68,8 +68,9 @@ export class FaceOccluder {
         // Forehead area (to cover more of the face)
         const foreheadIndices = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288];
 
-        // Nose bridge
-        const noseIndices = [6, 197, 195, 5, 4];
+        // Nose bridge - COMMENTED OUT for performance optimization
+        // The nose area is already covered by faceOvalIndices
+        // const noseIndices = [6, 197, 195, 5, 4];
 
         // Chin indices for extension (strictly lower face)
         // CONFIGURATION: These indices work well for coverage from chin to forehead
@@ -84,7 +85,7 @@ export class FaceOccluder {
         const importantIndices = [
             ...faceOvalIndices,
             ...foreheadIndices,
-            ...noseIndices,
+            // ...noseIndices,  // Commented out for performance
             // Eye regions
             // 33, 133, 160, 159, 158, 157, 173, 246, 161, 160, 159, 158,
             // 362, 263, 387, 386, 385, 384, 398, 466, 388, 387, 386, 385,
