@@ -5,6 +5,7 @@ export class FaceOccluder {
         this.scene = scene;
         this.occluderMesh = null;
         this.faceGeometry = null;
+        this.bodyOccluderMesh = null; // Rectangular mesh for body area
 
         this.init();
     }
@@ -32,6 +33,13 @@ export class FaceOccluder {
         this.occluderMesh.renderOrder = 0;
 
         this.scene.add(this.occluderMesh);
+
+        // Create body occluder (rectangular plane for neck, shoulders, chest)
+        const bodyGeometry = new THREE.PlaneGeometry(10, 10); // Large plane
+        this.bodyOccluderMesh = new THREE.Mesh(bodyGeometry, material);
+        this.bodyOccluderMesh.renderOrder = 0;
+        // Position will be updated in updateFace based on chin position
+        this.scene.add(this.bodyOccluderMesh);
     }
 
     updateFace(landmarks, camera) {
@@ -142,6 +150,21 @@ export class FaceOccluder {
         this.faceGeometry.setIndex(indices);
         this.faceGeometry.computeVertexNormals();
         this.faceGeometry.attributes.position.needsUpdate = true;
+
+        // Update body occluder position based on chin landmark
+        // Find the chin point (landmark 152 is the bottom of the chin)
+        if (landmarks.length > 152) {
+            const chinLandmark = landmarks[152];
+            const chinX = -(chinLandmark.x - 0.5) * widthAtZero * 1.1 + 0.1; // Same transforms as face
+            const chinY = -(chinLandmark.y - 0.5) * heightAtZero * 1.1;
+
+            // Position the body occluder below the chin
+            // CONFIGURATION: Adjust these values to control body occluder coverage
+            const bodyOffsetY = -5.5; // How far below chin (negative = down)
+            const bodyZ = 0.0; // Same Z as face occluder
+
+            this.bodyOccluderMesh.position.set(chinX, chinY + bodyOffsetY, bodyZ);
+        }
     }
 
     dispose() {
@@ -149,6 +172,10 @@ export class FaceOccluder {
             this.scene.remove(this.occluderMesh);
             this.faceGeometry.dispose();
             this.occluderMesh.material.dispose();
+        }
+        if (this.bodyOccluderMesh) {
+            this.scene.remove(this.bodyOccluderMesh);
+            this.bodyOccluderMesh.geometry.dispose();
         }
     }
 }
