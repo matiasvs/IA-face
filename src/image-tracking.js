@@ -1,6 +1,8 @@
 import { MindARThree } from 'mind-ar/dist/mindar-image-three.prod.js';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import targetsUrl from './particleImage/targets.mind?url';
+import objectTestUrl from './models3d/objectTest.glb?url';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const container = document.querySelector('#container');
@@ -21,29 +23,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Create an anchor (index 0 because we have 1 image target)
     const anchor = mindarThree.addAnchor(0);
 
-    // Add a 3D object to the anchor
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
+    // Load 3D model instead of cube
+    const loader = new GLTFLoader();
+    loader.load(
+        objectTestUrl,
+        (gltf) => {
+            const model = gltf.scene;
 
-    // Position cube slightly above the image
-    cube.position.z = 0.5;
+            // Position model slightly above the image
+            model.position.z = 0.5;
+            model.scale.set(0.5, 0.5, 0.5); // Same scale as face tracking
 
-    anchor.group.add(cube);
+            anchor.group.add(model);
+            console.log('✅ objectTest.glb loaded successfully in image tracking');
 
-    // Start the AR engine
-    try {
-        await mindarThree.start();
+            // Start the AR engine
+            mindarThree.start().then(() => {
+                // Animation loop
+                renderer.setAnimationLoop(() => {
+                    // Rotate model for visual effect
+                    model.rotation.x += 0.01;
+                    model.rotation.y += 0.01;
 
-        // Animation loop
-        renderer.setAnimationLoop(() => {
-            // Rotate cube for visual effect
-            cube.rotation.x += 0.01;
-            cube.rotation.y += 0.01;
+                    renderer.render(scene, camera);
+                });
+            }).catch((error) => {
+                console.error('Failed to start MindAR:', error);
+            });
+        },
+        (progress) => {
+            console.log(`Loading model: ${(progress.loaded / progress.total * 100).toFixed(2)}%`);
+        },
+        (error) => {
+            console.error('❌ Error loading objectTest.glb:', error);
+            // Fallback to cube if model fails to load
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+            const cube = new THREE.Mesh(geometry, material);
+            cube.position.z = 0.5;
+            anchor.group.add(cube);
 
-            renderer.render(scene, camera);
-        });
-    } catch (error) {
-        console.error('Failed to start MindAR:', error);
-    }
+            // Start the AR engine with fallback cube
+            mindarThree.start().then(() => {
+                renderer.setAnimationLoop(() => {
+                    cube.rotation.x += 0.01;
+                    cube.rotation.y += 0.01;
+                    renderer.render(scene, camera);
+                });
+            }).catch((error) => {
+                console.error('Failed to start MindAR:', error);
+            });
+        }
+    );
 });
