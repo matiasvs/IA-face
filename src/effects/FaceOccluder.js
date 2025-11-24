@@ -111,7 +111,7 @@ export class FaceOccluder {
 
                 // Horizontal offset to shift mask to the left
                 // CONFIGURATION: Adjust this value to move mask left (positive) or right (negative)
-                const xOffset = 0.15;
+                const xOffset = 0.4;
                 x += xOffset;
 
                 // Manual extensions removed to reset shape
