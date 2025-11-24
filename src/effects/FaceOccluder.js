@@ -97,8 +97,13 @@ export class FaceOccluder {
                 const landmark = landmarks[idx];
                 // Apply uniform scale to expand the mask slightly
                 const scale = 1.1;
-                const x = -(landmark.x - 0.5) * widthAtZero * scale;
+                let x = -(landmark.x - 0.5) * widthAtZero * scale;
                 let y = -(landmark.y - 0.5) * heightAtZero * scale;
+
+                // Horizontal offset to shift mask to the left
+                // CONFIGURATION: Adjust this value to move mask left (positive) or right (negative)
+                const xOffset = 0.3;
+                x += xOffset;
 
                 // Manual extensions removed to reset shape
                 // if (foreheadTopIndices.includes(idx)) { ... }
