@@ -64,6 +64,9 @@ export class FaceOccluder {
         const noseIndices = [6, 197, 195, 5, 4];
 
         // Chin indices for extension (strictly lower face)
+        // CONFIGURATION: These indices work well for coverage from chin to forehead
+        // Chin offset: -0.5 (see line ~105)
+        // Scale: 1.1 (see line ~98)
         const chinIndices = [
             152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, // Left side from chin
             377, 400, 378, 379, 365, 397, 288, 361, 323, 454     // Right side from chin
@@ -116,32 +119,13 @@ export class FaceOccluder {
             }
         });
 
-
-
-        // Create triangles using Delaunay-like approach
-        // For simplicity, we'll create a convex hull-like mesh
-        // Using a simple fan triangulation from center point
-
-        // Calculate center point
-        let centerX = 0, centerY = 0, centerZ = 0;
-        for (let i = 0; i < vertices.length; i += 3) {
-            centerX += vertices[i];
-            centerY += vertices[i + 1];
-            centerZ += vertices[i + 2];
-        }
+        // Create triangles by connecting consecutive vertices
+        // This creates a simple polygon without a center point to avoid stretching
         const count = vertices.length / 3;
-        centerX /= count;
-        centerY /= count;
-        centerZ /= count;
 
-        // Add center vertex
-        vertices.push(centerX, centerY, centerZ);
-        const centerIndex = count;
-
-        // Create triangles from center to each edge
-        for (let i = 0; i < count; i++) {
-            const next = (i + 1) % count;
-            indices.push(centerIndex, i, next);
+        // Create a simple convex hull by connecting vertices in order
+        for (let i = 1; i < count - 1; i++) {
+            indices.push(0, i, i + 1);
         }
 
         // Update geometry
