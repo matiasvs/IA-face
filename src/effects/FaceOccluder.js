@@ -18,8 +18,8 @@ export class FaceOccluder {
         const material = new THREE.MeshBasicMaterial({
             color: 0xff0000,       // Red for debugging
             colorWrite: true,      // Write to color buffer (visible)
-            transparent: true,
-            opacity: 0.5,
+            transparent: false,    // Disable transparency for debug
+            opacity: 1.0,          // Full opacity
             depthWrite: true,      // Write to depth buffer (blocks objects)
             depthTest: true,       // Test depth
             depthFunc: THREE.LessEqualDepth,  // Standard depth function
@@ -36,6 +36,11 @@ export class FaceOccluder {
 
     updateFace(landmarks, camera) {
         if (!landmarks || landmarks.length === 0) return;
+
+        // Debug log (throttled)
+        if (Math.random() < 0.01) {
+            console.log(`FaceOccluder: updateFace called. Landmarks: ${landmarks.length}`);
+        }
 
         // Calculate world space dimensions
         const fov = camera.fov * (Math.PI / 180);
@@ -145,6 +150,11 @@ export class FaceOccluder {
             'position',
             new THREE.Float32BufferAttribute(vertices, 3)
         );
+
+        if (Math.random() < 0.01) {
+            console.log(`FaceOccluder: Generated vertices: ${vertices.length / 3}`);
+        }
+
         this.faceGeometry.setIndex(indices);
         this.faceGeometry.computeVertexNormals();
         this.faceGeometry.attributes.position.needsUpdate = true;
