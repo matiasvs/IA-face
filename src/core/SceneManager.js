@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { ParticleRain } from '../effects/ParticleRain.js';
 import { FaceOccluder } from '../effects/FaceOccluder.js';
+import objectTestUrl from '../models3d/objectTest.glb?url';
 
 export class SceneManager {
     constructor(canvas) {
@@ -44,10 +45,11 @@ export class SceneManager {
         // Load controllable 3D model (positioned on right side, middle)
         const loader = new GLTFLoader();
         loader.load(
-            '/src/models3d/objectTest.glb',
+            objectTestUrl,
             (gltf) => {
                 this.controllableCube = gltf.scene;
                 this.controllableCube.position.set(2, 0, 0); // Right side, middle height
+                this.controllableCube.scale.set(1, 1, 1); // Adjust scale if needed
                 this.controllableCube.renderOrder = 1; // Render after occluder
 
                 // Enable depth testing for all meshes in the model

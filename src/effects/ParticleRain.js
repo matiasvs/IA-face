@@ -11,7 +11,7 @@ export class ParticleRain {
 
         // Configuration
         this.config = {
-            particleSize: 1.32,  // Size of the sprite (1.1x larger than 1.2)
+            particleSize: 0.8,  // Size of the sprite (reduced to 0.8)
             fallSpeed: 0.100,  // 1.7x faster fall speed
             spawnAreaWidth: 7,   // Increased from 4 to 7 to expand to sides
             spawnAreaHeight: 8,
