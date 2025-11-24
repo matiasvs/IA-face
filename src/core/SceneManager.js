@@ -49,7 +49,7 @@ export class SceneManager {
             (gltf) => {
                 this.controllableCube = gltf.scene;
                 this.controllableCube.position.set(2, 0, 0); // Right side, middle height
-                this.controllableCube.scale.set(1, 1, 1); // Adjust scale if needed
+                this.controllableCube.scale.set(0.5, 0.5, 0.5); // 50% smaller
                 this.controllableCube.renderOrder = 1; // Render after occluder
 
                 // Enable depth testing for all meshes in the model
