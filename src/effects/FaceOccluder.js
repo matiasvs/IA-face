@@ -93,7 +93,11 @@ export class FaceOccluder {
 
                 // Manual extensions removed to reset shape
                 // if (foreheadTopIndices.includes(idx)) { ... }
-                // if (chinIndices.includes(idx)) { ... }
+
+                if (chinIndices.includes(idx)) {
+                    // Extend downwards to cover chin/neck (added back as requested)
+                    y -= 1.5;
+                }
 
                 // Position face mesh at a constant Z depth closer to camera
                 // Particles are at z = -2.5
