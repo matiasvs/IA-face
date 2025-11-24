@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     offsetYSlider.value = -0.6;
     scaleSlider.value = 1.0;
     depthSlider.value = 0.5;
-    faceOffsetXSlider.value = -1.0;
+    faceOffsetXSlider.value = -0.1;
     updateCalibration();
   });
 

@@ -18,7 +18,7 @@ export class SceneManager {
 
         // Calibration parameters for face mask
         this.faceCalibration = {
-            offsetX: -1.0  // Horizontal offset for face mask
+            offsetX: -0.1  // Horizontal offset for face mask
         };
 
         this.init();

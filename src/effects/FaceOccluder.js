@@ -42,7 +42,7 @@ export class FaceOccluder {
         this.scene.add(this.bodyOccluderMesh);
     }
 
-    updateFace(landmarks, camera, xOffset = -1.0) {
+    updateFace(landmarks, camera, xOffset = -0.1) {
         if (!landmarks || landmarks.length === 0) return;
 
         // Calculate world space dimensions
