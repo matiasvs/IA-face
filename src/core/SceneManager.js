@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { ParticleRain } from '../effects/ParticleRain.js';
 import { FaceOccluder } from '../effects/FaceOccluder.js';
 
@@ -40,17 +41,44 @@ export class SceneManager {
         // Initialize face occluder for depth-based occlusion
         this.faceOccluder = new FaceOccluder(this.scene);
 
-        // Create controllable red cube (positioned on right side, middle)
-        const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-        const cubeMaterial = new THREE.MeshStandardMaterial({
-            color: 0xff0000,
-            depthTest: true,
-            depthWrite: true
-        });
-        this.controllableCube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-        this.controllableCube.position.set(2, 0, 0); // Right side, middle height
-        this.controllableCube.renderOrder = 1; // Render after occluder
-        this.scene.add(this.controllableCube);
+        // Load controllable 3D model (positioned on right side, middle)
+        const loader = new GLTFLoader();
+        loader.load(
+            '/src/models3d/objectTest.glb',
+            (gltf) => {
+                this.controllableCube = gltf.scene;
+                this.controllableCube.position.set(2, 0, 0); // Right side, middle height
+                this.controllableCube.renderOrder = 1; // Render after occluder
+
+                // Enable depth testing for all meshes in the model
+                this.controllableCube.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material.depthTest = true;
+                        child.material.depthWrite = true;
+                    }
+                });
+
+                this.scene.add(this.controllableCube);
+                console.log('✅ objectTest.glb loaded successfully');
+            },
+            (progress) => {
+                console.log(`Loading model: ${(progress.loaded / progress.total * 100).toFixed(2)}%`);
+            },
+            (error) => {
+                console.error('❌ Error loading objectTest.glb:', error);
+                // Fallback to cube if model fails to load
+                const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+                const cubeMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xff0000,
+                    depthTest: true,
+                    depthWrite: true
+                });
+                this.controllableCube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+                this.controllableCube.position.set(2, 0, 0);
+                this.controllableCube.renderOrder = 1;
+                this.scene.add(this.controllableCube);
+            }
+        );
 
         // Movement configuration
         this.cubeMovement = {
