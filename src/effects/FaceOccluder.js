@@ -89,26 +89,9 @@ export class FaceOccluder {
                 const x = -(landmark.x - 0.5) * widthAtZero;
                 let y = -(landmark.y - 0.5) * heightAtZero;
 
-                // Extend forehead upwards to cover hair
-                // Forehead indices: 10 (top center), and surrounding upper arc
-                const foreheadTopIndices = [10, 338, 297, 332, 284, 251, 389, 356, 454];
-
-                if (foreheadTopIndices.includes(idx)) {
-                    // Extend upwards more (increased from 1.2 to 2.5)
-                    y += 2.5;
-                }
-
-                // Extend chin downwards to cover neck
-                // Chin/Jawline indices
-                const chinIndices = [
-                    152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109,
-                    365, 379, 378, 400, 377, 454, 323, 361, 288, 397
-                ];
-
-                if (chinIndices.includes(idx)) {
-                    // Extend downwards slightly (reverted from aggressive -6.0)
-                    y -= 0.8;
-                }
+                // Manual extensions removed to reset shape
+                // if (foreheadTopIndices.includes(idx)) { ... }
+                // if (chinIndices.includes(idx)) { ... }
 
                 // Position face mesh at a constant Z depth closer to camera
                 // Particles are at z = -2.5
