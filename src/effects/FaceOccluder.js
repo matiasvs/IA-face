@@ -18,8 +18,8 @@ export class FaceOccluder {
         const material = new THREE.MeshBasicMaterial({
             color: 0xff0000,       // Red for debugging
             colorWrite: true,      // Write to color buffer (visible)
-            transparent: false,    // Disable transparency for debug
-            opacity: 1.0,          // Full opacity
+            transparent: true,     // Enable transparency
+            opacity: 0.5,          // Semi-transparent
             depthWrite: true,      // Write to depth buffer (blocks objects)
             depthTest: true,       // Test depth
             depthFunc: THREE.LessEqualDepth,  // Standard depth function
@@ -36,11 +36,6 @@ export class FaceOccluder {
 
     updateFace(landmarks, camera) {
         if (!landmarks || landmarks.length === 0) return;
-
-        // Debug log (throttled)
-        if (Math.random() < 0.01) {
-            console.log(`FaceOccluder: updateFace called. Landmarks: ${landmarks.length}`);
-        }
 
         // Calculate world space dimensions
         const fov = camera.fov * (Math.PI / 180);
@@ -68,8 +63,11 @@ export class FaceOccluder {
         // Nose bridge
         const noseIndices = [6, 197, 195, 5, 4];
 
-        // Chin indices for extension
-        const chinIndices = [152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377];
+        // Chin indices for extension (strictly lower face)
+        const chinIndices = [
+            152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, // Left side from chin
+            377, 400, 378, 379, 365, 397, 288, 361, 323, 454     // Right side from chin
+        ];
 
         // Combine all important face regions
         const importantIndices = [
@@ -103,8 +101,9 @@ export class FaceOccluder {
                 // if (foreheadTopIndices.includes(idx)) { ... }
 
                 if (chinIndices.includes(idx)) {
-                    // Extend downwards to cover chin/neck (added back as requested)
-                    y -= 1.5;
+                    // Extend downwards to cover chin/neck
+                    // Reduced from 1.5 to 0.5 to prevent "too low" look
+                    y -= 0.5;
                 }
 
                 // Position face mesh at a constant Z depth closer to camera
@@ -150,10 +149,6 @@ export class FaceOccluder {
             'position',
             new THREE.Float32BufferAttribute(vertices, 3)
         );
-
-        if (Math.random() < 0.01) {
-            console.log(`FaceOccluder: Generated vertices: ${vertices.length / 3}`);
-        }
 
         this.faceGeometry.setIndex(indices);
         this.faceGeometry.computeVertexNormals();
