@@ -86,8 +86,10 @@ export class FaceOccluder {
         uniqueIndices.forEach((idx, i) => {
             if (idx < landmarks.length) {
                 const landmark = landmarks[idx];
-                const x = -(landmark.x - 0.5) * widthAtZero;
-                let y = -(landmark.y - 0.5) * heightAtZero;
+                // Apply uniform scale to expand the mask slightly
+                const scale = 1.1;
+                const x = -(landmark.x - 0.5) * widthAtZero * scale;
+                let y = -(landmark.y - 0.5) * heightAtZero * scale;
 
                 // Manual extensions removed to reset shape
                 // if (foreheadTopIndices.includes(idx)) { ... }
