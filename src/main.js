@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     sceneManager.updateHands(results);
   });
 
-  let isHandTrackingEnabled = true;
+  let isHandTrackingEnabled = false;
   const toggleHandTrackingBtn = document.getElementById('toggle-hand-tracking');
 
   toggleHandTrackingBtn.addEventListener('click', () => {
