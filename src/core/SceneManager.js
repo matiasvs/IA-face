@@ -16,6 +16,11 @@ export class SceneManager {
             depthScale: 0.5
         };
 
+        // Calibration parameters for face mask
+        this.faceCalibration = {
+            offsetX: -1.0  // Horizontal offset for face mask
+        };
+
         this.init();
     }
 
@@ -64,7 +69,7 @@ export class SceneManager {
 
         // Update face occluder for particle occlusion
         if (this.faceOccluder) {
-            this.faceOccluder.updateFace(landmarks, this.camera);
+            this.faceOccluder.updateFace(landmarks, this.camera, this.faceCalibration.offsetX);
         }
 
         // Landmarks
@@ -234,5 +239,10 @@ export class SceneManager {
         this.handCalibration.offsetY = offsetY;
         this.handCalibration.scale = scale;
         this.handCalibration.depthScale = depthScale;
+    }
+
+    // Method to update face mask calibration
+    setFaceCalibration(offsetX) {
+        this.faceCalibration.offsetX = offsetX;
     }
 }

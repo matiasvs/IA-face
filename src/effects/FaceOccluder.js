@@ -42,7 +42,7 @@ export class FaceOccluder {
         this.scene.add(this.bodyOccluderMesh);
     }
 
-    updateFace(landmarks, camera) {
+    updateFace(landmarks, camera, xOffset = -1.0) {
         if (!landmarks || landmarks.length === 0) return;
 
         // Calculate world space dimensions
@@ -109,9 +109,8 @@ export class FaceOccluder {
                 let x = -(landmark.x - 0.5) * widthAtZero * scale;
                 let y = -(landmark.y - 0.5) * heightAtZero * scale;
 
-                // Horizontal offset to shift mask to the left
-                // CONFIGURATION: Adjust this value to move mask left (positive) or right (negative)
-                const xOffset = -1;
+                // Horizontal offset to shift mask to the left/right
+                // CONFIGURATION: This value is now controlled by calibration slider
                 x += xOffset;
 
                 // Manual extensions removed to reset shape

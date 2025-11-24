@@ -57,6 +57,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const scaleValue = document.getElementById('scale-value');
   const depthSlider = document.getElementById('depth');
   const depthValue = document.getElementById('depth-value');
+  const faceOffsetXSlider = document.getElementById('face-offset-x');
+  const faceOffsetXValue = document.getElementById('face-offset-x-value');
   const resetButton = document.getElementById('reset-calibration');
 
   // Toggle panel visibility
@@ -69,12 +71,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const offsetY = parseFloat(offsetYSlider.value);
     const scale = parseFloat(scaleSlider.value);
     const depth = parseFloat(depthSlider.value);
+    const faceOffsetX = parseFloat(faceOffsetXSlider.value);
 
     sceneManager.setHandCalibration(offsetY, scale, depth);
+    sceneManager.setFaceCalibration(faceOffsetX);
 
     offsetYValue.textContent = offsetY.toFixed(1);
     scaleValue.textContent = scale.toFixed(2);
     depthValue.textContent = depth.toFixed(1);
+    faceOffsetXValue.textContent = faceOffsetX.toFixed(1);
   };
 
   // Initialize with default values
@@ -83,12 +88,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   offsetYSlider.addEventListener('input', updateCalibration);
   scaleSlider.addEventListener('input', updateCalibration);
   depthSlider.addEventListener('input', updateCalibration);
+  faceOffsetXSlider.addEventListener('input', updateCalibration);
 
   // Reset calibration
   resetButton.addEventListener('click', () => {
     offsetYSlider.value = -0.6;
     scaleSlider.value = 1.0;
     depthSlider.value = 0.5;
+    faceOffsetXSlider.value = -1.0;
     updateCalibration();
   });
 
