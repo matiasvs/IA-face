@@ -12,7 +12,7 @@ export class ParticleRain {
         // Configuration
         this.config = {
             particleSize: 1.2,  // Size of the sprite (1.6x larger)
-            fallSpeed: 0.034,  // 1.7x faster fall speed
+            fallSpeed: 0.100,  // 1.7x faster fall speed
             spawnAreaWidth: 7,   // Increased from 4 to 7 to expand to sides
             spawnAreaHeight: 8,
             // Adjusted depth to match hand tracking range (around z=0)
