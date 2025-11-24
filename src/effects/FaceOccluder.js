@@ -16,7 +16,10 @@ export class FaceOccluder {
         // Material that writes to depth buffer but doesn't render color
         // This creates an invisible mesh that blocks objects behind it
         const material = new THREE.MeshBasicMaterial({
-            colorWrite: false,     // Don't write to color buffer (invisible)
+            color: 0xff0000,       // Red for debugging
+            colorWrite: true,      // Write to color buffer (visible)
+            transparent: true,
+            opacity: 0.5,
             depthWrite: true,      // Write to depth buffer (blocks objects)
             depthTest: true,       // Test depth
             depthFunc: THREE.LessEqualDepth,  // Standard depth function
