@@ -513,4 +513,49 @@ export class OpenCVTracker {
 
         console.log('🧹 Cleanup complete');
     }
+
+    // Focus Control Methods
+    getFocusCapabilities() {
+        if (!this.video.srcObject) return null;
+        const track = this.video.srcObject.getVideoTracks()[0];
+        if (!track || !track.getCapabilities) return null;
+        return track.getCapabilities();
+    }
+
+    async toggleFocusLock(locked) {
+        if (!this.video.srcObject) return;
+        const track = this.video.srcObject.getVideoTracks()[0];
+        if (!track) return;
+
+        const mode = locked ? 'manual' : 'continuous';
+        console.log(`📷 Setting focus mode to: ${mode}`);
+
+        try {
+            await track.applyConstraints({
+                advanced: [{ focusMode: mode }]
+            });
+            return true;
+        } catch (e) {
+            console.warn('⚠️ Error setting focus mode:', e);
+            return false;
+        }
+    }
+
+    async setFocusDistance(distance) {
+        if (!this.video.srcObject) return;
+        const track = this.video.srcObject.getVideoTracks()[0];
+        if (!track) return;
+
+        console.log(`📷 Setting focus distance to: ${distance}`);
+
+        try {
+            await track.applyConstraints({
+                advanced: [{ focusDistance: distance }]
+            });
+            return true;
+        } catch (e) {
+            console.warn('⚠️ Error setting focus distance:', e);
+            return false;
+        }
+    }
 }

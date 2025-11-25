@@ -186,6 +186,18 @@
         <div style="font-size: 12px; margin-top: 10px; opacity: 0.8;">
             <div id="tracking-info">Esperando imagen objetivo...</div>
         </div>
+
+        <!-- Focus Controls (only visible in OpenCV mode) -->
+        <div id="focus-controls"
+            style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
+            <div style="font-size: 14px; margin-bottom: 8px; font-weight: bold;">Control de Foco</div>
+            <button id="focus-lock-btn" class="btn-secondary" style="width: 100%; margin-bottom: 8px;">Bloquear
+                Foco</button>
+            <div id="focus-slider-container" style="display: none;">
+                <label for="focus-slider" style="font-size: 12px;">Distancia de Foco:</label>
+                <input type="range" id="focus-slider" style="width: 100%;">
+            </div>
+        </div>
     </div>
 
     <!-- Start Overlay -->
@@ -330,6 +342,25 @@
                         opencvTracker.start();
                     }
 
+                    // Check focus capabilities and show UI
+                    setTimeout(() => {
+                        const capabilities = opencvTracker.getFocusCapabilities();
+                        const focusControls = document.getElementById('focus-controls');
+                        const focusSlider = document.getElementById('focus-slider');
+
+                        if (capabilities && capabilities.focusMode && capabilities.focusMode.includes('manual')) {
+                            focusControls.style.display = 'block';
+
+                            if (capabilities.focusDistance) {
+                                focusSlider.min = capabilities.focusDistance.min;
+                                focusSlider.max = capabilities.focusDistance.max;
+                                focusSlider.step = capabilities.focusDistance.step;
+                                focusSlider.value = capabilities.focusDistance.min; // Start at macro?
+                                document.getElementById('focus-slider-container').style.display = 'block';
+                            }
+                        }
+                    }, 1000); // Wait a bit for camera to be fully ready
+
                     currentMode = 'opencv';
                     toggleBtn.textContent = 'Cambiar a MindAR';
                     modeIndicator.textContent = 'OpenCV';
@@ -351,6 +382,7 @@
             } else {
                 // Switch to MindAR
                 toggleBtn.disabled = true;
+                document.getElementById('focus-controls').style.display = 'none';
 
                 // Stop OpenCV
                 if (opencvTracker) {
@@ -373,6 +405,28 @@
 
                 toggleBtn.disabled = false;
             }
+        });
+
+        // Focus Control Handlers
+        let isFocusLocked = false;
+        document.getElementById('focus-lock-btn').addEventListener('click', async () => {
+            if (!opencvTracker) return;
+            isFocusLocked = !isFocusLocked;
+            const success = await opencvTracker.toggleFocusLock(isFocusLocked);
+
+            const btn = document.getElementById('focus-lock-btn');
+            if (success) {
+                btn.textContent = isFocusLocked ? 'Desbloquear Foco' : 'Bloquear Foco';
+                btn.className = isFocusLocked ? 'btn-primary' : 'btn-secondary';
+            } else {
+                isFocusLocked = !isFocusLocked; // Revert state if failed
+                alert('No se pudo cambiar el modo de foco.');
+            }
+        });
+
+        document.getElementById('focus-slider').addEventListener('input', async (e) => {
+            if (!opencvTracker) return;
+            await opencvTracker.setFocusDistance(parseFloat(e.target.value));
         });
     </script>
 </body>
