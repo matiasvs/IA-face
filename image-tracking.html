@@ -203,6 +203,7 @@
     <script type="module">
         import { OpenCVTracker } from './src/opencv-tracking.js';
         import { MindARTracker } from './src/image-tracking.js';
+        import referenceImageUrl from './src/particleImage/opencv-card.png';
 
         // Load OpenCV.js dynamically
         function loadOpenCV() {
@@ -312,7 +313,7 @@
                 const webglCanvas = document.getElementById('opencv-webgl-canvas');
 
                 // You need to provide a reference image path here
-                const referenceImagePath = './src/particleImage/opencv-card.png';
+                const referenceImagePath = referenceImageUrl;
 
                 if (!opencvTracker) {
                     opencvTracker = new OpenCVTracker(video, videoCanvas, webglCanvas, referenceImagePath);
