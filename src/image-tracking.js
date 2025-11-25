@@ -23,6 +23,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Create an anchor (index 0 because we have 1 image target)
     const anchor = mindarThree.addAnchor(0);
 
+    // Smoothing configuration
+    const smoothingFactor = 0.15; // Lower = smoother but slower response (0.1-0.3 recommended)
+    let targetPosition = new THREE.Vector3();
+    let targetQuaternion = new THREE.Quaternion();
+    let smoothedPosition = new THREE.Vector3();
+    let smoothedQuaternion = new THREE.Quaternion();
+
     // Load 3D model instead of cube
     const loader = new GLTFLoader();
     loader.load(
@@ -37,10 +44,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             anchor.group.add(model);
             console.log('✅ objectTest.glb loaded successfully in image tracking');
 
+            // Initialize smoothed values
+            smoothedPosition.copy(anchor.group.position);
+            smoothedQuaternion.copy(anchor.group.quaternion);
+
             // Start the AR engine
             mindarThree.start().then(() => {
                 // Animation loop
                 renderer.setAnimationLoop(() => {
+                    // Apply smoothing to anchor position and rotation
+                    if (anchor.group.visible) {
+                        // Get target values from MindAR
+                        targetPosition.copy(anchor.group.position);
+                        targetQuaternion.copy(anchor.group.quaternion);
+
+                        // Smoothly interpolate position (lerp)
+                        smoothedPosition.lerp(targetPosition, smoothingFactor);
+
+                        // Smoothly interpolate rotation (slerp)
+                        smoothedQuaternion.slerp(targetQuaternion, smoothingFactor);
+
+                        // Apply smoothed values
+                        anchor.group.position.copy(smoothedPosition);
+                        anchor.group.quaternion.copy(smoothedQuaternion);
+                    }
+
                     renderer.render(scene, camera);
                 });
             }).catch((error) => {
