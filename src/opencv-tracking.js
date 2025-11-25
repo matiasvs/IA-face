@@ -3,10 +3,11 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import objectTestUrl from './models3d/objectTest.glb?url';
 
 export class OpenCVTracker {
-    constructor(videoElement, canvasElement, referenceImagePath) {
+    constructor(videoElement, videoCanvas, webglCanvas, referenceImagePath) {
         this.video = videoElement;
-        this.canvas = canvasElement;
-        this.ctx = canvasElement.getContext('2d');
+        this.videoCanvas = videoCanvas;
+        this.webglCanvas = webglCanvas;
+        this.videoCtx = videoCanvas.getContext('2d');
         this.referenceImagePath = referenceImagePath;
 
         // Three.js setup
@@ -86,7 +87,7 @@ export class OpenCVTracker {
         // Create camera
         this.camera = new THREE.PerspectiveCamera(
             60,
-            this.canvas.width / this.canvas.height,
+            this.webglCanvas.width / this.webglCanvas.height,
             0.1,
             1000
         );
@@ -94,11 +95,11 @@ export class OpenCVTracker {
 
         // Create renderer
         this.renderer = new THREE.WebGLRenderer({
-            canvas: this.canvas,
+            canvas: this.webglCanvas,
             alpha: true,
             antialias: true
         });
-        this.renderer.setSize(this.canvas.width, this.canvas.height);
+        this.renderer.setSize(this.webglCanvas.width, this.webglCanvas.height);
         this.renderer.setClearColor(0x000000, 0);
 
         // Add lights
@@ -195,20 +196,49 @@ export class OpenCVTracker {
 
     async startVideo() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' }
-            });
+            let stream;
+
+            // Try rear camera first (for mobile)
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' }
+                });
+                console.log('📹 Using rear camera');
+            } catch (error) {
+                // Fallback to front camera (for desktop)
+                console.log('⚠️ Rear camera not available, trying front camera...');
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' }
+                });
+                console.log('📹 Using front camera');
+            }
+
             this.video.srcObject = stream;
             await this.video.play();
 
-            // Set canvas size to match video
-            this.canvas.width = this.video.videoWidth;
-            this.canvas.height = this.video.videoHeight;
-            this.renderer.setSize(this.canvas.width, this.canvas.height);
+            // Wait for video metadata to load
+            await new Promise(resolve => {
+                if (this.video.videoWidth && this.video.videoHeight) {
+                    resolve();
+                } else {
+                    this.video.addEventListener('loadedmetadata', resolve, { once: true });
+                }
+            });
+
+            // Set canvas sizes to match video
+            this.videoCanvas.width = this.video.videoWidth;
+            this.videoCanvas.height = this.video.videoHeight;
+            this.webglCanvas.width = this.video.videoWidth;
+            this.webglCanvas.height = this.video.videoHeight;
+
+            this.renderer.setSize(this.video.videoWidth, this.video.videoHeight);
+            this.camera.aspect = this.video.videoWidth / this.video.videoHeight;
+            this.camera.updateProjectionMatrix();
 
             console.log('✅ Video stream started');
         } catch (error) {
             console.error('❌ Error accessing camera:', error);
+            throw error;
         }
     }
 
@@ -326,8 +356,8 @@ export class OpenCVTracker {
             const tx = h.doubleAt(0, 2);
             const ty = h.doubleAt(1, 2);
 
-            const normalizedX = (tx / this.canvas.width) * 2 - 1;
-            const normalizedY = -((ty / this.canvas.height) * 2 - 1);
+            const normalizedX = (tx / this.videoCanvas.width) * 2 - 1;
+            const normalizedY = -((ty / this.videoCanvas.height) * 2 - 1);
 
             // Target values
             const targetPosition = new THREE.Vector3(normalizedX * 3, normalizedY * 3, 0);
@@ -353,8 +383,8 @@ export class OpenCVTracker {
     }
 
     render() {
-        // Draw video frame
-        this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+        // Draw video frame on 2D canvas
+        this.videoCtx.drawImage(this.video, 0, 0, this.videoCanvas.width, this.videoCanvas.height);
 
         // Process frame for tracking
         this.processFrame();
@@ -364,7 +394,7 @@ export class OpenCVTracker {
             this.model.visible = false;
         }
 
-        // Render Three.js scene on top
+        // Render Three.js scene on WebGL canvas
         this.renderer.render(this.scene, this.camera);
     }
 
