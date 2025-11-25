@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const anchor = mindarThree.addAnchor(0);
 
     // Smoothing configuration
-    const smoothingFactor = 0.15; // Lower = smoother but slower response (0.1-0.3 recommended)
+    const smoothingFactor = 0.1; // Lower = smoother but slower response (0.1-0.3 recommended)
     let targetPosition = new THREE.Vector3();
     let targetQuaternion = new THREE.Quaternion();
     let smoothedPosition = new THREE.Vector3();
