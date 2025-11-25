@@ -4,11 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Tracking - MindAR</title>
+    <title>Image Tracking - MindAR & OpenCV</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
+            font-family: Arial, sans-serif;
         }
 
         #container {
@@ -18,35 +19,291 @@
             overflow: hidden;
         }
 
+        #opencv-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            display: none;
+        }
+
+        #opencv-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #opencv-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
         #control-panel {
             position: absolute;
             top: 10px;
             left: 10px;
             z-index: 1000;
             background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
+            padding: 15px;
             border-radius: 8px;
             color: white;
+        }
+
+        #control-panel h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
         }
 
         button {
             padding: 8px 16px;
             cursor: pointer;
-            background: #4CAF50;
             color: white;
             border: none;
             border-radius: 4px;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+        }
+
+        .btn-secondary {
+            background: #2196F3;
+        }
+
+        .btn-warning {
+            background: #FF9800;
+        }
+
+        .mode-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .mode-mindar {
+            background: #4CAF50;
+        }
+
+        .mode-opencv {
+            background: #FF9800;
+        }
+
+        #loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            z-index: 2000;
+            display: none;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
 
 <body>
+    <!-- MindAR Container -->
     <div id="container"></div>
-    <div id="control-panel">
-        <h3>Image Tracking</h3>
-        <button onclick="window.location.href='./index.html'">Volver a Face Tracking</button>
+
+    <!-- OpenCV Container -->
+    <div id="opencv-container">
+        <video id="opencv-video" playsinline></video>
+        <canvas id="opencv-canvas"></canvas>
     </div>
-    <script type="module" src="/src/image-tracking.js"></script>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator">
+        <div class="spinner"></div>
+        <div>Cargando OpenCV.js...</div>
+    </div>
+
+    <!-- Control Panel -->
+    <div id="control-panel">
+        <h3>
+            Image Tracking
+            <span id="mode-indicator" class="mode-indicator mode-mindar">MindAR</span>
+        </h3>
+
+        <div class="button-group">
+            <button id="toggle-mode" class="btn-warning">Cambiar a OpenCV</button>
+            <button onclick="window.location.href='./index.html'" class="btn-secondary">Volver a Face Tracking</button>
+        </div>
+
+        <div style="font-size: 12px; margin-top: 10px; opacity: 0.8;">
+            <div id="tracking-info">Esperando imagen objetivo...</div>
+        </div>
+    </div>
+
+    <!-- OpenCV.js Library -->
+    <script async src="https://docs.opencv.org/4.5.2/opencv.js" onload="onOpenCvReady()"
+        type="text/javascript"></script>
+
+    <!-- Main Script -->
+    <script type="module">
+        import { OpenCVTracker } from './src/opencv-tracking.js';
+
+        let currentMode = 'mindar'; // 'mindar' or 'opencv'
+        let mindARScript = null;
+        let opencvTracker = null;
+
+        // OpenCV ready callback
+        window.onOpenCvReady = function () {
+            console.log('✅ OpenCV.js loaded and ready');
+            document.getElementById('loading-indicator').style.display = 'none';
+        };
+
+        // Toggle between MindAR and OpenCV
+        document.getElementById('toggle-mode').addEventListener('click', async () => {
+            const toggleBtn = document.getElementById('toggle-mode');
+            const modeIndicator = document.getElementById('mode-indicator');
+            const loadingIndicator = document.getElementById('loading-indicator');
+
+            if (currentMode === 'mindar') {
+                // Switch to OpenCV
+                toggleBtn.disabled = true;
+                loadingIndicator.style.display = 'block';
+
+                // Hide MindAR container
+                document.getElementById('container').style.display = 'none';
+
+                // Unload MindAR script if exists
+                if (mindARScript) {
+                    mindARScript.remove();
+                    mindARScript = null;
+                }
+
+                // Wait for OpenCV to be ready
+                if (typeof cv === 'undefined' || !cv.Mat) {
+                    await new Promise(resolve => {
+                        const checkInterval = setInterval(() => {
+                            if (typeof cv !== 'undefined' && cv.Mat) {
+                                clearInterval(checkInterval);
+                                resolve();
+                            }
+                        }, 100);
+                    });
+                }
+
+                // Show OpenCV container
+                document.getElementById('opencv-container').style.display = 'block';
+
+                // Initialize OpenCV tracker
+                const video = document.getElementById('opencv-video');
+                const canvas = document.getElementById('opencv-canvas');
+
+                // You need to provide a reference image path here
+                const referenceImagePath = './src/particleImage/opencv-card.png';
+
+                opencvTracker = new OpenCVTracker(video, canvas, referenceImagePath);
+
+                try {
+                    await opencvTracker.init();
+                    opencvTracker.start();
+
+                    currentMode = 'opencv';
+                    toggleBtn.textContent = 'Cambiar a MindAR';
+                    modeIndicator.textContent = 'OpenCV';
+                    modeIndicator.className = 'mode-indicator mode-opencv';
+                    document.getElementById('tracking-info').textContent = 'OpenCV tracking activo';
+                } catch (error) {
+                    console.error('Error initializing OpenCV tracker:', error);
+                    alert('Error al inicializar OpenCV tracker. Volviendo a MindAR.');
+                    // Revert to MindAR
+                    document.getElementById('opencv-container').style.display = 'none';
+                    document.getElementById('container').style.display = 'block';
+                    loadMindAR();
+                }
+
+                loadingIndicator.style.display = 'none';
+                toggleBtn.disabled = false;
+
+            } else {
+                // Switch to MindAR
+                toggleBtn.disabled = true;
+
+                // Stop and cleanup OpenCV
+                if (opencvTracker) {
+                    opencvTracker.cleanup();
+                    opencvTracker = null;
+                }
+
+                // Hide OpenCV container
+                document.getElementById('opencv-container').style.display = 'none';
+
+                // Show MindAR container
+                document.getElementById('container').style.display = 'block';
+
+                // Load MindAR
+                loadMindAR();
+
+                currentMode = 'mindar';
+                toggleBtn.textContent = 'Cambiar a OpenCV';
+                modeIndicator.textContent = 'MindAR';
+                modeIndicator.className = 'mode-indicator mode-mindar';
+                document.getElementById('tracking-info').textContent = 'MindAR tracking activo';
+
+                toggleBtn.disabled = false;
+            }
+        });
+
+        // Load MindAR script dynamically
+        function loadMindAR() {
+            if (!mindARScript) {
+                mindARScript = document.createElement('script');
+                mindARScript.type = 'module';
+                mindARScript.src = '/src/image-tracking.js';
+                document.body.appendChild(mindARScript);
+            }
+        }
+
+        // Start with MindAR by default
+        loadMindAR();
+        document.getElementById('tracking-info').textContent = 'MindAR tracking activo';
+    </script>
 </body>
 
 </html>
