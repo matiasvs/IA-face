@@ -199,12 +199,27 @@
         <p style="margin-bottom: 20px;">Permite el acceso a la cámara para continuar</p>
         <button id="start-button" class="btn-primary" style="font-size: 18px; padding: 12px 24px;">Iniciar
             Experiencia</button>
+        <div id="debug-info"
+            style="margin-top: 20px; font-size: 12px; color: #aaa; max-width: 80%; text-align: center;"></div>
     </div>
 
     <!-- Main Script -->
     <script type="module">
         import { OpenCVTracker } from './src/opencv-tracking.js';
         import { MindARTracker } from './src/image-tracking.js';
+
+        // Debug cameras
+        async function checkCameras() {
+            const debugEl = document.getElementById('debug-info');
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(d => d.kind === 'videoinput');
+                debugEl.innerHTML = `Cámaras detectadas: ${videoDevices.length}<br>${videoDevices.map(d => d.label || 'Sin nombre').join('<br>')}`;
+            } catch (e) {
+                debugEl.textContent = 'Error detectando cámaras: ' + e.message;
+            }
+        }
+        checkCameras();
 
         let currentMode = 'mindar'; // 'mindar' or 'opencv'
         let mindARTracker = null;
