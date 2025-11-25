@@ -28,7 +28,7 @@ export class OpenCVTracker {
         this.homography = null;
 
         // Smoothing
-        this.smoothingFactor = 0.1;
+        this.smoothingFactor = 0.05;
         this.smoothedPosition = new THREE.Vector3();
         this.smoothedRotation = new THREE.Euler();
         this.smoothedScale = 1.0;
@@ -217,6 +217,26 @@ export class OpenCVTracker {
 
             this.video.srcObject = stream;
             await this.video.play();
+
+            // Attempt to lock focus (disable autofocus hunting)
+            const track = stream.getVideoTracks()[0];
+            if (track) {
+                const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+                console.log('📷 Camera capabilities:', capabilities);
+
+                if (capabilities.focusMode && capabilities.focusMode.includes('manual')) {
+                    try {
+                        // First let it focus for a moment (optional, but 'manual' usually locks current)
+                        // Applying 'manual' mode to lock focus
+                        await track.applyConstraints({
+                            advanced: [{ focusMode: 'manual' }]
+                        });
+                        console.log('✅ Focus locked to manual mode');
+                    } catch (e) {
+                        console.warn('⚠️ Could not lock focus:', e);
+                    }
+                }
+            }
 
             // Wait for video metadata to load
             await new Promise(resolve => {
