@@ -41,10 +41,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             mindarThree.start().then(() => {
                 // Animation loop
                 renderer.setAnimationLoop(() => {
-                    // Rotate model for visual effect
-                    model.rotation.x += 0.01;
-                    model.rotation.y += 0.01;
-
                     renderer.render(scene, camera);
                 });
             }).catch((error) => {
@@ -66,8 +62,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Start the AR engine with fallback cube
             mindarThree.start().then(() => {
                 renderer.setAnimationLoop(() => {
-                    cube.rotation.x += 0.01;
-                    cube.rotation.y += 0.01;
                     renderer.render(scene, camera);
                 });
             }).catch((error) => {
