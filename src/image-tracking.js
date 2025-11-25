@@ -113,8 +113,14 @@ export class MindARTracker {
 
     stop() {
         if (this.mindarThree) {
-            this.mindarThree.stop();
-            this.mindarThree.renderer.setAnimationLoop(null);
+            try {
+                this.mindarThree.stop();
+            } catch (e) {
+                console.warn('Error stopping MindAR (possibly not started yet):', e);
+            }
+            if (this.mindarThree.renderer) {
+                this.mindarThree.renderer.setAnimationLoop(null);
+            }
             this.isRunning = false;
         }
     }
