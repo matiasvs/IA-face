@@ -195,9 +195,10 @@
     <!-- Main Script -->
     <script type="module">
         import { OpenCVTracker } from './src/opencv-tracking.js';
+        import { MindARTracker } from './src/image-tracking.js';
 
         let currentMode = 'mindar'; // 'mindar' or 'opencv'
-        let mindARScript = null;
+        let mindARTracker = null;
         let opencvTracker = null;
 
         // OpenCV ready callback
@@ -205,6 +206,20 @@
             console.log('✅ OpenCV.js loaded and ready');
             document.getElementById('loading-indicator').style.display = 'none';
         };
+
+        // Initialize MindAR
+        async function initMindAR() {
+            if (!mindARTracker) {
+                mindARTracker = new MindARTracker();
+            }
+            try {
+                await mindARTracker.start();
+                document.getElementById('tracking-info').textContent = 'MindAR tracking activo';
+            } catch (error) {
+                console.error('Error starting MindAR:', error);
+                alert('Error al iniciar MindAR: ' + error.message);
+            }
+        }
 
         // Toggle between MindAR and OpenCV
         document.getElementById('toggle-mode').addEventListener('click', async () => {
@@ -220,10 +235,9 @@
                 // Hide MindAR container
                 document.getElementById('container').style.display = 'none';
 
-                // Unload MindAR script if exists
-                if (mindARScript) {
-                    mindARScript.remove();
-                    mindARScript = null;
+                // Stop MindAR
+                if (mindARTracker) {
+                    mindARTracker.stop();
                 }
 
                 // Wait for OpenCV to be ready
@@ -249,7 +263,9 @@
                 // You need to provide a reference image path here
                 const referenceImagePath = './src/particleImage/opencv-card.png';
 
-                opencvTracker = new OpenCVTracker(video, videoCanvas, webglCanvas, referenceImagePath);
+                if (!opencvTracker) {
+                    opencvTracker = new OpenCVTracker(video, videoCanvas, webglCanvas, referenceImagePath);
+                }
 
                 try {
                     // Check for secure context
@@ -257,8 +273,10 @@
                         throw new Error('OpenCV tracking requires a Secure Context (HTTPS or localhost). Camera access is blocked on insecure connections.');
                     }
 
-                    await opencvTracker.init();
-                    opencvTracker.start();
+                    if (!opencvTracker.isTracking) {
+                        await opencvTracker.init();
+                        opencvTracker.start();
+                    }
 
                     currentMode = 'opencv';
                     toggleBtn.textContent = 'Cambiar a MindAR';
@@ -268,10 +286,11 @@
                 } catch (error) {
                     console.error('Error initializing OpenCV tracker:', error);
                     alert(`Error al inicializar OpenCV tracker:\n${error.name}: ${error.message}\n\nSi estás en móvil, asegúrate de usar HTTPS.`);
+
                     // Revert to MindAR
                     document.getElementById('opencv-container').style.display = 'none';
                     document.getElementById('container').style.display = 'block';
-                    loadMindAR();
+                    initMindAR();
                 }
 
                 loadingIndicator.style.display = 'none';
@@ -281,10 +300,9 @@
                 // Switch to MindAR
                 toggleBtn.disabled = true;
 
-                // Stop and cleanup OpenCV
+                // Stop OpenCV
                 if (opencvTracker) {
-                    opencvTracker.cleanup();
-                    opencvTracker = null;
+                    opencvTracker.stop();
                 }
 
                 // Hide OpenCV container
@@ -293,33 +311,22 @@
                 // Show MindAR container
                 document.getElementById('container').style.display = 'block';
 
-                // Load MindAR
-                loadMindAR();
+                // Start MindAR
+                await initMindAR();
 
                 currentMode = 'mindar';
                 toggleBtn.textContent = 'Cambiar a OpenCV';
                 modeIndicator.textContent = 'MindAR';
                 modeIndicator.className = 'mode-indicator mode-mindar';
-                document.getElementById('tracking-info').textContent = 'MindAR tracking activo';
 
                 toggleBtn.disabled = false;
             }
         });
 
-        // Load MindAR script dynamically
-        function loadMindAR() {
-            if (!mindARScript) {
-                mindARScript = document.createElement('script');
-                mindARScript.type = 'module';
-                mindARScript.src = '/src/image-tracking.js';
-                document.body.appendChild(mindARScript);
-            }
-        }
-
         // Start with MindAR by default
-        loadMindAR();
-        document.getElementById('tracking-info').textContent = 'MindAR tracking activo';
+        initMindAR();
     </script>
 </body>
 
 </html>
+```

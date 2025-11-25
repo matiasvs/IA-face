@@ -4,97 +4,118 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import targetsUrl from './particleImage/targets.mind?url';
 import objectTestUrl from './models3d/objectTest.glb?url';
 
-document.addEventListener('DOMContentLoaded', async () => {
-    const container = document.querySelector('#container');
+export class MindARTracker {
+    constructor() {
+        this.container = document.querySelector('#container');
+        this.mindarThree = null;
+        this.renderer = null;
+        this.scene = null;
+        this.camera = null;
+        this.anchor = null;
+        this.model = null;
+        this.isRunning = false;
 
-    console.log('Initializing MindAR with targets:', targetsUrl);
+        // Smoothing configuration
+        this.smoothingFactor = 0.1;
+        this.targetPosition = new THREE.Vector3();
+        this.targetQuaternion = new THREE.Quaternion();
+        this.smoothedPosition = new THREE.Vector3();
+        this.smoothedQuaternion = new THREE.Quaternion();
+    }
 
-    const mindarThree = new MindARThree({
-        container: container,
-        imageTargetSrc: targetsUrl,
-    });
+    async init() {
+        console.log('Initializing MindAR with targets:', targetsUrl);
 
-    const { renderer, scene, camera } = mindarThree;
+        this.mindarThree = new MindARThree({
+            container: this.container,
+            imageTargetSrc: targetsUrl,
+        });
 
-    // Add a light
-    const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-    scene.add(light);
+        this.renderer = this.mindarThree.renderer;
+        this.scene = this.mindarThree.scene;
+        this.camera = this.mindarThree.camera;
 
-    // Create an anchor (index 0 because we have 1 image target)
-    const anchor = mindarThree.addAnchor(0);
+        // Add a light
+        const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+        this.scene.add(light);
 
-    // Smoothing configuration
-    const smoothingFactor = 0.1; // Lower = smoother but slower response (0.1-0.3 recommended)
-    let targetPosition = new THREE.Vector3();
-    let targetQuaternion = new THREE.Quaternion();
-    let smoothedPosition = new THREE.Vector3();
-    let smoothedQuaternion = new THREE.Quaternion();
+        // Create an anchor
+        this.anchor = this.mindarThree.addAnchor(0);
 
-    // Load 3D model instead of cube
-    const loader = new GLTFLoader();
-    loader.load(
-        objectTestUrl,
-        (gltf) => {
-            const model = gltf.scene;
+        // Load 3D model
+        await this.loadModel();
+    }
 
-            // Position model slightly above the image
-            model.position.z = 0.5;
-            model.scale.set(0.5, 0.5, 0.5); // Same scale as face tracking
+    async loadModel() {
+        return new Promise((resolve, reject) => {
+            const loader = new GLTFLoader();
+            loader.load(
+                objectTestUrl,
+                (gltf) => {
+                    this.model = gltf.scene;
+                    this.model.position.z = 0.5;
+                    this.model.scale.set(0.5, 0.5, 0.5);
+                    this.anchor.group.add(this.model);
+                    console.log('✅ objectTest.glb loaded successfully in image tracking');
 
-            anchor.group.add(model);
-            console.log('✅ objectTest.glb loaded successfully in image tracking');
+                    // Initialize smoothed values
+                    this.smoothedPosition.copy(this.anchor.group.position);
+                    this.smoothedQuaternion.copy(this.anchor.group.quaternion);
 
-            // Initialize smoothed values
-            smoothedPosition.copy(anchor.group.position);
-            smoothedQuaternion.copy(anchor.group.quaternion);
+                    resolve();
+                },
+                (progress) => {
+                    console.log(`Loading model: ${(progress.loaded / progress.total * 100).toFixed(2)}%`);
+                },
+                (error) => {
+                    console.error('❌ Error loading objectTest.glb:', error);
+                    // Fallback to cube
+                    const geometry = new THREE.BoxGeometry(1, 1, 1);
+                    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+                    const cube = new THREE.Mesh(geometry, material);
+                    cube.position.z = 0.5;
+                    this.anchor.group.add(cube);
+                    resolve();
+                }
+            );
+        });
+    }
 
-            // Start the AR engine
-            mindarThree.start().then(() => {
-                // Animation loop
-                renderer.setAnimationLoop(() => {
-                    // Apply smoothing to anchor position and rotation
-                    if (anchor.group.visible) {
-                        // Get target values from MindAR
-                        targetPosition.copy(anchor.group.position);
-                        targetQuaternion.copy(anchor.group.quaternion);
+    async start() {
+        if (!this.mindarThree) await this.init();
 
-                        // Smoothly interpolate position (lerp)
-                        smoothedPosition.lerp(targetPosition, smoothingFactor);
+        try {
+            await this.mindarThree.start();
+            this.isRunning = true;
 
-                        // Smoothly interpolate rotation (slerp)
-                        smoothedQuaternion.slerp(targetQuaternion, smoothingFactor);
+            this.renderer.setAnimationLoop(() => {
+                if (!this.isRunning) return;
 
-                        // Apply smoothed values
-                        anchor.group.position.copy(smoothedPosition);
-                        anchor.group.quaternion.copy(smoothedQuaternion);
-                    }
+                // Apply smoothing
+                if (this.anchor.group.visible) {
+                    this.targetPosition.copy(this.anchor.group.position);
+                    this.targetQuaternion.copy(this.anchor.group.quaternion);
 
-                    renderer.render(scene, camera);
-                });
-            }).catch((error) => {
-                console.error('Failed to start MindAR:', error);
+                    this.smoothedPosition.lerp(this.targetPosition, this.smoothingFactor);
+                    this.smoothedQuaternion.slerp(this.targetQuaternion, this.smoothingFactor);
+
+                    this.anchor.group.position.copy(this.smoothedPosition);
+                    this.anchor.group.quaternion.copy(this.smoothedQuaternion);
+                }
+
+                this.renderer.render(this.scene, this.camera);
             });
-        },
-        (progress) => {
-            console.log(`Loading model: ${(progress.loaded / progress.total * 100).toFixed(2)}%`);
-        },
-        (error) => {
-            console.error('❌ Error loading objectTest.glb:', error);
-            // Fallback to cube if model fails to load
-            const geometry = new THREE.BoxGeometry(1, 1, 1);
-            const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-            const cube = new THREE.Mesh(geometry, material);
-            cube.position.z = 0.5;
-            anchor.group.add(cube);
-
-            // Start the AR engine with fallback cube
-            mindarThree.start().then(() => {
-                renderer.setAnimationLoop(() => {
-                    renderer.render(scene, camera);
-                });
-            }).catch((error) => {
-                console.error('Failed to start MindAR:', error);
-            });
+        } catch (error) {
+            console.error('Failed to start MindAR:', error);
+            throw error;
         }
-    );
-});
+    }
+
+    stop() {
+        if (this.mindarThree) {
+            this.mindarThree.stop();
+            this.mindarThree.renderer.setAnimationLoop(null);
+            this.isRunning = false;
+        }
+    }
+}
