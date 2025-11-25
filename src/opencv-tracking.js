@@ -227,7 +227,7 @@ export class OpenCVTracker {
                 }
             });
 
-            // Set canvas sizes to match video
+            // Set internal canvas resolution to match video
             this.videoCanvas.width = this.video.videoWidth;
             this.videoCanvas.height = this.video.videoHeight;
             this.webglCanvas.width = this.video.videoWidth;
@@ -237,11 +237,43 @@ export class OpenCVTracker {
             this.camera.aspect = this.video.videoWidth / this.video.videoHeight;
             this.camera.updateProjectionMatrix();
 
+            // Handle window resize
+            window.addEventListener('resize', () => this.updateCanvasLayout());
+            this.updateCanvasLayout();
+
             console.log('✅ Video stream started');
         } catch (error) {
             console.error('❌ Error accessing camera:', error);
             throw error;
         }
+    }
+
+    updateCanvasLayout() {
+        // Simulate "object-fit: cover" for canvas
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const videoRatio = this.video.videoWidth / this.video.videoHeight;
+        const windowRatio = windowWidth / windowHeight;
+
+        let renderWidth, renderHeight;
+
+        if (windowRatio > videoRatio) {
+            // Window is wider than video
+            renderWidth = windowWidth;
+            renderHeight = windowWidth / videoRatio;
+        } else {
+            // Window is taller than video
+            renderWidth = windowHeight * videoRatio;
+            renderHeight = windowHeight;
+        }
+
+        // Center the canvas
+        const left = (windowWidth - renderWidth) / 2;
+        const top = (windowHeight - renderHeight) / 2;
+
+        const style = `position: absolute; width: ${renderWidth}px; height: ${renderHeight}px; left: ${left}px; top: ${top}px;`;
+        this.videoCanvas.style.cssText = style + ' z-index: 1;';
+        this.webglCanvas.style.cssText = style + ' z-index: 2;';
     }
 
     processFrame() {
@@ -281,7 +313,7 @@ export class OpenCVTracker {
 
                 // Filter good matches (distance < threshold)
                 const goodMatches = [];
-                const threshold = 50;
+                const threshold = 40; // Stricter threshold
 
                 for (let i = 0; i < matches.size(); i++) {
                     const match = matches.get(i);
@@ -290,8 +322,8 @@ export class OpenCVTracker {
                     }
                 }
 
-                // Need at least 4 matches for homography
-                if (goodMatches.length >= 4) {
+                // Need at least 8 matches for stable homography
+                if (goodMatches.length >= 8) {
                     this.isTracking = true;
 
                     // Extract matched points
@@ -309,10 +341,12 @@ export class OpenCVTracker {
                     const srcMat = cv.matFromArray(goodMatches.length, 1, cv.CV_32FC2, srcPoints);
                     const dstMat = cv.matFromArray(goodMatches.length, 1, cv.CV_32FC2, dstPoints);
 
-                    this.homography = cv.findHomography(srcMat, dstMat, cv.RANSAC);
+                    this.homography = cv.findHomography(srcMat, dstMat, cv.RANSAC, 5.0);
 
                     // Update 3D object position based on homography
-                    this.update3DObject();
+                    if (!this.homography.empty()) {
+                        this.update3DObject();
+                    }
 
                     srcMat.delete();
                     dstMat.delete();
@@ -338,39 +372,71 @@ export class OpenCVTracker {
         if (!this.homography || !this.model) return;
 
         try {
-            // Extract transformation from homography
-            // This is a simplified approach - in production you'd want proper pose estimation
-            const h = this.homography;
-
-            // Get center point transformation
+            // 1. Calculate Center Position using Perspective Transform
+            // We transform the center point of the reference image to the video frame
             const centerX = this.referenceImage.cols / 2;
             const centerY = this.referenceImage.rows / 2;
 
-            // Calculate scale from homography
+            const srcPoints = cv.matFromArray(1, 1, cv.CV_32FC2, [centerX, centerY]);
+            const dstPoints = new cv.Mat();
+
+            cv.perspectiveTransform(srcPoints, dstPoints, this.homography);
+
+            const x = dstPoints.data32F[0];
+            const y = dstPoints.data32F[1];
+
+            srcPoints.delete();
+            dstPoints.delete();
+
+            // Sanity check: Is the point within reasonable bounds?
+            // Allow some margin outside the screen
+            if (x < -this.videoCanvas.width || x > this.videoCanvas.width * 2 ||
+                y < -this.videoCanvas.height || y > this.videoCanvas.height * 2) {
+                return; // Ignore outliers
+            }
+
+            // 2. Calculate Scale
+            // Transform (0,0) and (width,0) to get width in frame
+            const h = this.homography;
             const scaleX = Math.sqrt(h.doubleAt(0, 0) ** 2 + h.doubleAt(1, 0) ** 2);
             const scaleY = Math.sqrt(h.doubleAt(0, 1) ** 2 + h.doubleAt(1, 1) ** 2);
             const scale = (scaleX + scaleY) / 2;
 
-            // Calculate rotation
+            // Sanity check: Scale
+            if (scale < 0.1 || scale > 5.0) return;
+
+            // 3. Calculate Rotation
             const rotation = Math.atan2(h.doubleAt(1, 0), h.doubleAt(0, 0));
 
-            // Map to normalized coordinates (-1 to 1)
-            const tx = h.doubleAt(0, 2);
-            const ty = h.doubleAt(1, 2);
+            // 4. Map to Three.js Coordinates (Normalized Device Coordinates)
+            // X: -1 (left) to 1 (right)
+            // Y: 1 (top) to -1 (bottom)
+            const normalizedX = (x / this.videoCanvas.width) * 2 - 1;
+            const normalizedY = -((y / this.videoCanvas.height) * 2 - 1);
 
-            const normalizedX = (tx / this.videoCanvas.width) * 2 - 1;
-            const normalizedY = -((ty / this.videoCanvas.height) * 2 - 1);
+            // Z depth is arbitrary in this 2D-overlay approach, we keep it fixed or scale-dependent
+            // For true AR, we'd need PnP. Here we just overlay.
+            const targetPosition = new THREE.Vector3(normalizedX * (this.camera.aspect * 5), normalizedY * 5, 0);
+            // Note: The multiplier 5 depends on camera Z position (which is 5) and FOV.
+            // At Z=0, with Camera Z=5, the view height is 2 * 5 * tan(30deg) ~= 5.77
 
-            // Target values
-            const targetPosition = new THREE.Vector3(normalizedX * 3, normalizedY * 3, 0);
-            const targetRotation = new THREE.Euler(0, 0, rotation);
-            const targetScale = Math.max(0.1, Math.min(2, scale * 0.5));
+            // Refined mapping for PerspectiveCamera at Z=5, FOV=60
+            const visibleHeightAtZ0 = 2 * Math.tan((this.camera.fov * Math.PI / 180) / 2) * this.camera.position.z;
+            const visibleWidthAtZ0 = visibleHeightAtZ0 * this.camera.aspect;
+
+            targetPosition.x = normalizedX * (visibleWidthAtZ0 / 2);
+            targetPosition.y = normalizedY * (visibleHeightAtZ0 / 2);
+
+            const targetRotation = new THREE.Euler(0, 0, -rotation); // Negative rotation for Three.js
+            const targetScale = scale * 0.5; // Adjust base scale
 
             // Apply smoothing
             this.smoothedPosition.lerp(targetPosition, this.smoothingFactor);
-            this.smoothedRotation.x += (targetRotation.x - this.smoothedRotation.x) * this.smoothingFactor;
-            this.smoothedRotation.y += (targetRotation.y - this.smoothedRotation.y) * this.smoothingFactor;
+
+            // Smooth rotation (handle wraparound)
+            // Simplified lerp for rotation z
             this.smoothedRotation.z += (targetRotation.z - this.smoothedRotation.z) * this.smoothingFactor;
+
             this.smoothedScale += (targetScale - this.smoothedScale) * this.smoothingFactor;
 
             // Apply to model
