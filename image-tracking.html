@@ -203,6 +203,21 @@
             style="margin-top: 20px; font-size: 12px; color: #aaa; max-width: 80%; text-align: center;"></div>
     </div>
 
+    <!-- Global Scripts -->
+    <script>
+        // Define callback globally before loading OpenCV
+        window.onOpenCvReady = function () {
+            console.log('✅ OpenCV.js loaded and ready');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
+            window.isOpenCvLoaded = true;
+        };
+    </script>
+
+    <!-- OpenCV.js Library -->
+    <script async src="https://docs.opencv.org/4.5.2/opencv.js" onload="onOpenCvReady()"
+        type="text/javascript"></script>
+
     <!-- Main Script -->
     <script type="module">
         import { OpenCVTracker } from './src/opencv-tracking.js';
@@ -211,6 +226,7 @@
         // Debug cameras
         async function checkCameras() {
             const debugEl = document.getElementById('debug-info');
+            if (!debugEl) return;
             try {
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const videoDevices = devices.filter(d => d.kind === 'videoinput');
@@ -224,12 +240,6 @@
         let currentMode = 'mindar'; // 'mindar' or 'opencv'
         let mindARTracker = null;
         let opencvTracker = null;
-
-        // OpenCV ready callback
-        window.onOpenCvReady = function () {
-            console.log('✅ OpenCV.js loaded and ready');
-            document.getElementById('loading-indicator').style.display = 'none';
-        };
 
         // Initialize MindAR
         async function initMindAR() {
