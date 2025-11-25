@@ -148,9 +148,10 @@ export class OpenCVTracker {
                 resolve();
             };
 
-            img.onerror = (error) => {
-                console.error('❌ Failed to load reference image:', error);
-                reject(error);
+            img.onerror = () => {
+                const errorMsg = `Failed to load reference image from ${this.referenceImagePath}`;
+                console.error('❌ ' + errorMsg);
+                reject(new Error(errorMsg));
             };
 
             img.src = this.referenceImagePath;
@@ -188,6 +189,7 @@ export class OpenCVTracker {
                     const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
                     this.model = new THREE.Mesh(geometry, material);
                     this.scene.add(this.model);
+                    console.log('⚠️ Using fallback cube due to model load error');
                     resolve();
                 }
             );

@@ -252,6 +252,11 @@
                 opencvTracker = new OpenCVTracker(video, videoCanvas, webglCanvas, referenceImagePath);
 
                 try {
+                    // Check for secure context
+                    if (!window.isSecureContext) {
+                        throw new Error('OpenCV tracking requires a Secure Context (HTTPS or localhost). Camera access is blocked on insecure connections.');
+                    }
+
                     await opencvTracker.init();
                     opencvTracker.start();
 
@@ -262,7 +267,7 @@
                     document.getElementById('tracking-info').textContent = 'OpenCV tracking activo';
                 } catch (error) {
                     console.error('Error initializing OpenCV tracker:', error);
-                    alert('Error al inicializar OpenCV tracker. Volviendo a MindAR.');
+                    alert(`Error al inicializar OpenCV tracker:\n${error.name}: ${error.message}\n\nSi estás en móvil, asegúrate de usar HTTPS.`);
                     // Revert to MindAR
                     document.getElementById('opencv-container').style.display = 'none';
                     document.getElementById('container').style.display = 'block';
