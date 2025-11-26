@@ -124,4 +124,56 @@ export class MindARTracker {
             this.isRunning = false;
         }
     }
+
+    // Focus Control Methods
+    getFocusCapabilities() {
+        const video = this.mindarThree?.video;
+        if (!video || !video.srcObject) return null;
+
+        const track = video.srcObject.getVideoTracks()[0];
+        if (!track || !track.getCapabilities) return null;
+
+        return track.getCapabilities();
+    }
+
+    async toggleFocusLock(locked) {
+        const video = this.mindarThree?.video;
+        if (!video || !video.srcObject) return false;
+
+        const track = video.srcObject.getVideoTracks()[0];
+        if (!track) return false;
+
+        const mode = locked ? 'manual' : 'continuous';
+        console.log(`📷 Setting focus mode to: ${mode}`);
+
+        try {
+            await track.applyConstraints({
+                advanced: [{ focusMode: mode }]
+            });
+            return true;
+        } catch (e) {
+            console.warn('⚠️ Error setting focus mode:', e);
+            return false;
+        }
+    }
+
+    async setFocusDistance(distance) {
+        const video = this.mindarThree?.video;
+        if (!video || !video.srcObject) return false;
+
+        const track = video.srcObject.getVideoTracks()[0];
+        if (!track) return false;
+
+        console.log(`📷 Setting focus distance to: ${distance}`);
+
+        try {
+            await track.applyConstraints({
+                advanced: [{ focusDistance: distance }]
+            });
+            return true;
+        } catch (e) {
+            console.warn('⚠️ Error setting focus distance:', e);
+            return false;
+        }
+    }
 }

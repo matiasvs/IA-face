@@ -193,9 +193,9 @@
             <div id="tracking-info">Esperando imagen objetivo...</div>
         </div>
 
-        <!-- Focus Controls (only visible in OpenCV mode) -->
+        <!-- Focus Controls (visible in MindAR mode) -->
         <div id="focus-controls"
-            style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
+            style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
             <div style="font-size: 14px; margin-bottom: 8px; font-weight: bold;">Control de Foco</div>
             <button id="focus-lock-btn" class="btn-secondary" style="width: 100%; margin-bottom: 8px;">Bloquear
                 Foco</button>
@@ -278,6 +278,28 @@
             try {
                 await mindARTracker.start();
                 document.getElementById('tracking-info').textContent = 'MindAR tracking activo';
+
+                // Check focus capabilities and show UI
+                setTimeout(() => {
+                    const capabilities = mindARTracker.getFocusCapabilities();
+                    const focusSlider = document.getElementById('focus-slider');
+
+                    if (capabilities && capabilities.focusMode && capabilities.focusMode.includes('manual')) {
+                        console.log('✅ Manual focus available');
+
+                        if (capabilities.focusDistance) {
+                            focusSlider.min = capabilities.focusDistance.min;
+                            focusSlider.max = capabilities.focusDistance.max;
+                            focusSlider.step = capabilities.focusDistance.step;
+                            focusSlider.value = capabilities.focusDistance.min;
+                            document.getElementById('focus-slider-container').style.display = 'block';
+                            console.log('✅ Focus distance control available:', capabilities.focusDistance);
+                        }
+                    } else {
+                        console.log('⚠️ Manual focus not available on this camera');
+                    }
+                }, 1000); // Wait for camera to be fully ready
+
             } catch (error) {
                 console.error('Error starting MindAR:', error);
                 const errorMessage = error?.message || (typeof error === 'string' ? error : 'Unknown error');
@@ -416,9 +438,11 @@
         // Focus Control Handlers
         let isFocusLocked = false;
         document.getElementById('focus-lock-btn').addEventListener('click', async () => {
-            if (!opencvTracker) return;
+            const tracker = currentMode === 'mindar' ? mindARTracker : opencvTracker;
+            if (!tracker) return;
+
             isFocusLocked = !isFocusLocked;
-            const success = await opencvTracker.toggleFocusLock(isFocusLocked);
+            const success = await tracker.toggleFocusLock(isFocusLocked);
 
             const btn = document.getElementById('focus-lock-btn');
             if (success) {
@@ -431,8 +455,9 @@
         });
 
         document.getElementById('focus-slider').addEventListener('input', async (e) => {
-            if (!opencvTracker) return;
-            await opencvTracker.setFocusDistance(parseFloat(e.target.value));
+            const tracker = currentMode === 'mindar' ? mindARTracker : opencvTracker;
+            if (!tracker) return;
+            await tracker.setFocusDistance(parseFloat(e.target.value));
         });
     </script>
 </body>
