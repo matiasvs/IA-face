@@ -1,7 +1,7 @@
 import { MindARThree } from 'mind-ar/dist/mindar-image-three.prod.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import targetsUrl from './particleImage/targets2.mind?url';
+import targetsUrl from './particleImage/targets3.mind?url';
 import objectTestUrl from './models3d/objectTest.glb?url';
 
 export class MindARTracker {
