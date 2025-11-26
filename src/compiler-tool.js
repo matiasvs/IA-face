@@ -31,9 +31,23 @@ export class CompilerTool {
         console.log(`🔧 Starting compilation of ${this.images.length} image(s)...`);
 
         try {
+            // Convert File objects to HTMLImageElement
+            const imageElements = await Promise.all(
+                this.images.map(file => {
+                    return new Promise((resolve, reject) => {
+                        const img = new Image();
+                        img.onload = () => resolve(img);
+                        img.onerror = () => reject(new Error(`Failed to load image: ${file.name}`));
+                        img.src = URL.createObjectURL(file);
+                    });
+                })
+            );
+
+            console.log(`✅ Loaded ${imageElements.length} image element(s)`);
+
             // Compile images
             const dataList = await this.compiler.compileImageTargets(
-                this.images,
+                imageElements,
                 (progress) => {
                     const percentage = Math.round(progress * 100);
                     console.log(`📊 Compilation progress: ${percentage}%`);
@@ -42,6 +56,9 @@ export class CompilerTool {
             );
 
             console.log('✅ Compilation complete!');
+
+            // Clean up object URLs
+            imageElements.forEach(img => URL.revokeObjectURL(img.src));
 
             // Export to binary format
             this.compiledData = this.compiler.exportData();
