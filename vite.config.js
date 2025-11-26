@@ -11,6 +11,7 @@ export default defineConfig({
             input: {
                 main: 'index.html',
                 imageTracking: 'image-tracking.html',
+                compiler: 'compiler.html',
             },
         },
     },
