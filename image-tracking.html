@@ -89,6 +89,12 @@
             opacity: 0.8;
         }
 
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #666 !important;
+        }
+
         .btn-primary {
             background: #4CAF50;
         }
@@ -179,7 +185,7 @@
         </h3>
 
         <div class="button-group">
-            <button id="toggle-mode" class="btn-warning">Cambiar a OpenCV</button>
+            <button id="toggle-mode" class="btn-warning" disabled>Cambiar a OpenCV (Deshabilitado)</button>
             <button onclick="window.location.href='./index.html'" class="btn-secondary">Volver a Face Tracking</button>
         </div>
 
